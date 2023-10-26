@@ -8,6 +8,7 @@
 
 #include "MyApp.h"
 #include "Menu/ColorMenu.h"
+#include "Menu/SizeMenu.h"
 #include "DrawingCanvas.h"
 #include "Menu/RoundedButton.h"
 
@@ -22,13 +23,16 @@ private:
     wxPanel *BuildControlsPanel(wxWindow *parent);
 
     void SetupColorPanes(wxWindow *parent, wxSizer *sizer);
+    void SetupSizePanes(wxWindow *parent, wxSizer *sizer);
 
     void SelectColorPane(ColorMenu *pane);
+    void SelectSizePane(SizeMenu *pane);
 
     void OnChooseColor(wxCommandEvent &event);
 
 private:
     std::vector<ColorMenu *> colorPanes{};
+    std::vector<SizeMenu *> sizePanes{};
     ColorMenu *selectedColorPane{};
 
     DrawingCanvas *canvas;
@@ -38,7 +42,7 @@ private:
                                                  "#ffb55a", "#ffee65", "#beb9db",
                                                  "#fdcce5", "#8bd3c7"};
 
-    const int penCount = 6;
+    const std::vector<int> penWidths = {1, 3, 5, 8};
 
     const std::string lightBackground = "#f4f3f3";
     const std::string darkBackground = "#2c2828";
@@ -72,6 +76,19 @@ void MyFrame::SetupColorPanes(wxWindow *parent, wxSizer *sizer)
     sizer->Add(button, 0, wxRIGHT | wxBOTTOM, FromDIP(5));
 }
 
+void MyFrame::SetupSizePanes(wxWindow *parent, wxSizer *sizer)
+{
+    for (const auto &width : penWidths)
+    {
+        auto sizePane = new SizeMenu(parent, wxID_ANY, width);
+        sizePane->Bind(wxEVT_LEFT_DOWN, [this, sizePane](wxMouseEvent &event)
+                       { SelectSizePane(sizePane); });
+
+        sizePanes.push_back(sizePane);
+        sizer->Add(sizePane, 0, wxRIGHT | wxBOTTOM, FromDIP(5));
+    }
+}
+
 wxPanel *MyFrame::BuildControlsPanel(wxWindow *parent)
 {
     auto controlsPanel = new wxScrolled<wxPanel>(parent, wxID_ANY);
@@ -90,8 +107,13 @@ wxPanel *MyFrame::BuildControlsPanel(wxWindow *parent)
 
     mainSizer->Add(colorPaneSizer, 0, wxALL, FromDIP(5));
 
-    text = new wxStaticText(controlsPanel, wxID_ANY, "Pens");
+    text = new wxStaticText(controlsPanel, wxID_ANY, "Size");
     mainSizer->Add(text, 0, wxALL, FromDIP(5));
+
+    auto sizePaneSizer = new wxWrapSizer(wxHORIZONTAL);
+    SetupSizePanes(controlsPanel, sizePaneSizer);
+
+    mainSizer->Add(sizePaneSizer, 0, wxALL, FromDIP(5));
 
     mainSizer->AddStretchSpacer();
     mainSizer->AddSpacer(FromDIP(2));
@@ -112,7 +134,7 @@ MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
     canvas = new DrawingCanvas(splitter, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
     splitter->SplitVertically(controlsPanel, canvas);
-    splitter->SetSashPosition(FromDIP(220));
+    splitter->SetSashPosition(FromDIP(100));
 
     this->SetSize(FromDIP(800), FromDIP(500));
     this->SetMinSize({FromDIP(400), FromDIP(200)});
@@ -129,6 +151,16 @@ void MyFrame::SelectColorPane(ColorMenu *pane)
     }
     canvas->SetPenColor(pane->color);
     selectedColorPane = pane;
+}
+
+void MyFrame::SelectSizePane(SizeMenu *pane)
+{
+    for (auto sizePane : sizePanes)
+    {
+        sizePane->selected = (sizePane == pane);
+        sizePane->Refresh();
+    }
+    canvas->SetPenWidth(pane->width);
 }
 
 void MyFrame::OnChooseColor(wxCommandEvent &event)

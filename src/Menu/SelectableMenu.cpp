@@ -38,3 +38,7 @@ void SelectableMenu::OnPaint(wxPaintEvent &event)
         delete gc;
     }
 }
+
+void SelectableMenu::OnMouseEnter(wxMouseEvent &event)
+{
+}

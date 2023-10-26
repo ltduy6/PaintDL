@@ -25,4 +25,5 @@ protected:
 
 private:
     void OnPaint(wxPaintEvent &event);
+    void OnMouseEnter(wxMouseEvent &event);
 };

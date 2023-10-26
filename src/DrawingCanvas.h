@@ -1,5 +1,6 @@
 #pragma once
 #include <wx/wx.h>
+#include <wx/dcgraph.h>
 #include <vector>
 
 class DrawingCanvas : public wxWindow
@@ -9,6 +10,7 @@ public:
     virtual ~DrawingCanvas() noexcept {}
 
     void SetPenColor(const wxColour &color);
+    void SetPenWidth(int width);
 
 private:
     void OnPaint(wxPaintEvent &event);
