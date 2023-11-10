@@ -14,7 +14,26 @@ set(wxWidgets_USE_STATIC 1)
 
 find_package(wxWidgets REQUIRED)
 
-set(SRCS main.cpp DrawingCanvas.cpp Menu/SelectableMenu.cpp Menu/ColorMenu.cpp Menu/SizeMenu.cpp Menu/RoundedButton.cpp)
+set(SRCS 
+# Main folder
+main.cpp 
+DrawingView.cpp 
+DrawingDocument.cpp
+# Canvas folder
+Canvas/DrawingCanvas.cpp 
+Canvas/CanvasObject.cpp
+Canvas/ObjectSpace.cpp
+# Menu folder
+Menu/SelectablePane.cpp 
+Menu/ColorPane.cpp 
+Menu/SizePane.cpp 
+Menu/RoundedButton.cpp 
+Menu/ShapePane.cpp
+Menu/ToolsPane.cpp
+Menu/ColorMenu.cpp
+Menu/SizeMenu.cpp
+Menu/ShapeMenu.cpp
+Menu/ToolMenu.cpp)
 
 include(${wxWidgets_USE_FILE})
 

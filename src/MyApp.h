@@ -1,14 +1,23 @@
 #pragma once
 
 #include <wx/wx.h>
+#include "DrawingView.h"
+#include "StrokeSettings.h"
 
-class Myframe;
+class MyFrame;
 
 class MyApp : public wxApp
 {
 public:
     virtual bool OnInit();
 
+    static void SetupCanvasForView(DrawingView *view);
+    static StrokeSettings &GetStrokeSettings();
+
 private:
-    Myframe *frame{};
+    MyFrame *m_frame{};
+
+    std::unique_ptr<wxDocManager> m_docManager{};
+
+    StrokeSettings m_strokeSettings;
 };

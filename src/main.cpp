@@ -2,47 +2,53 @@
 #include <wx/wrapsizer.h>
 #include <wx/splitter.h>
 #include <wx/colordlg.h>
+#include <functional>
 
 #include <string>
 #include <vector>
+#include <chrono>
 
-#include "MyApp.h"
+#include "myapp.h"
+
+#include "Menu/RoundedButton.h"
 #include "Menu/ColorMenu.h"
 #include "Menu/SizeMenu.h"
-#include "DrawingCanvas.h"
-#include "Menu/RoundedButton.h"
+#include "Menu/ShapeMenu.h"
+#include "Menu/ToolMenu.h"
+
+#include "Canvas/DrawingCanvas.h"
+#include "DrawingDocument.h"
+#include "DrawingView.h"
 
 wxIMPLEMENT_APP(MyApp);
 
-class MyFrame : public wxFrame
+class MyFrame : public wxDocParentFrame
 {
 public:
-    MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size);
+    MyFrame(wxDocManager *manager, wxFrame *frame, wxWindowID id, const wxString &title,
+            const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize);
+
+    void SetupCanvasForView(DrawingView *view);
 
 private:
-    wxPanel *BuildControlsPanel(wxWindow *parent);
+    wxScrolled<wxPanel> *BuildControlsPanel(wxWindow *parent);
 
-    void SetupColorPanes(wxWindow *parent, wxSizer *sizer);
-    void SetupSizePanes(wxWindow *parent, wxSizer *sizer);
-
-    void SelectColorPane(ColorMenu *pane);
-    void SelectSizePane(SizeMenu *pane);
-
-    void OnChooseColor(wxCommandEvent &event);
+    void BuildMenuBar();
+    void ResetControls();
 
 private:
-    std::vector<ColorMenu *> colorPanes{};
-    std::vector<SizeMenu *> sizePanes{};
-    ColorMenu *selectedColorPane{};
+    ColorMenu colorMenu{};
+    SizeMenu sizeMenu{};
+    ShapeMenu shapeMenu{};
+    ToolMenu toolMenu{};
 
-    DrawingCanvas *canvas;
+    wxPanel *docPanel;
+    wxScrolled<wxPanel> *controlsPanel;
 
-    const std::vector<std::string> niceColors = {"#000000", "#ffffff", "#fd7f6f",
-                                                 "#7eb0d5", "#b2e061", "#bd7ebe",
-                                                 "#ffb55a", "#ffee65", "#beb9db",
-                                                 "#fdcce5", "#8bd3c7"};
+    wxStaticText *textSize;
+    wxSizer *penWidthSizer;
 
-    const std::vector<int> penWidths = {1, 3, 5, 8};
+    int idExport{};
 
     const std::string lightBackground = "#f4f3f3";
     const std::string darkBackground = "#2c2828";
@@ -52,44 +58,60 @@ bool MyApp::OnInit()
 {
     wxInitAllImageHandlers();
 
-    MyFrame *frame = new MyFrame("Hello World", wxDefaultPosition, wxDefaultSize);
-    frame->Show(true);
+    SetAppDisplayName("PaintDL");
+
+    m_docManager.reset(new wxDocManager);
+    m_docManager->SetMaxDocsOpen(1);
+
+    new wxDocTemplate(m_docManager.get(), "Drawing",
+                      "*.pxz", "", "pxz", "DrawingDocument", "DrawingView",
+                      CLASSINFO(DrawingDocument),
+                      CLASSINFO(DrawingView));
+
+    m_frame = new MyFrame(m_docManager.get(), nullptr, wxID_ANY, wxGetApp().GetAppDisplayName());
+    m_frame->Show(true);
+
     return true;
 }
 
-void MyFrame::SetupColorPanes(wxWindow *parent, wxSizer *sizer)
+StrokeSettings &MyApp::GetStrokeSettings()
 {
-    wxSize size{};
-    for (const auto &color : niceColors)
-    {
-        auto colorPane = new ColorMenu(parent, wxID_ANY, wxColour(color));
-        size = colorPane->DoGetBestSize();
-
-        colorPane->Bind(wxEVT_LEFT_DOWN, [this, colorPane](wxMouseEvent &event)
-                        { SelectColorPane(colorPane); });
-
-        colorPanes.push_back(colorPane);
-        sizer->Add(colorPane, 0, wxRIGHT | wxBOTTOM, FromDIP(5));
-    }
-    auto button = new RoundedButton(parent, wxID_ANY, "color-wheel.png", size);
-    button->Bind(wxEVT_BUTTON, &MyFrame::OnChooseColor, this);
-    sizer->Add(button, 0, wxRIGHT | wxBOTTOM, FromDIP(5));
+    return wxGetApp().m_strokeSettings;
 }
 
-void MyFrame::SetupSizePanes(wxWindow *parent, wxSizer *sizer)
+void MyApp::SetupCanvasForView(DrawingView *view)
 {
-    for (const auto &width : penWidths)
-    {
-        auto sizePane = new SizeMenu(parent, wxID_ANY, width);
-        sizePane->Bind(wxEVT_LEFT_DOWN, [this, sizePane](wxMouseEvent &event)
-                       { SelectSizePane(sizePane); });
-
-        sizePanes.push_back(sizePane);
-        sizer->Add(sizePane, 0, wxRIGHT | wxBOTTOM, FromDIP(5));
-    }
+    wxGetApp().m_frame->SetupCanvasForView(view);
 }
 
-wxPanel *MyFrame::BuildControlsPanel(wxWindow *parent)
+void MyFrame::SetupCanvasForView(DrawingView *view)
+{
+    if (docPanel->GetChildren().size() > 0)
+    {
+        docPanel->GetSizer()->Clear(true);
+    }
+
+    if (view != nullptr)
+    {
+        auto canvas = new DrawingCanvas(docPanel, view, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+        docPanel->GetSizer()->Add(canvas, 1, wxEXPAND);
+
+        this->Bind(
+            wxEVT_MENU, [canvas](wxCommandEvent &)
+            { canvas->ShowExportDialog(); },
+            idExport);
+
+        view->SetFrame(this);
+    }
+    else
+    {
+        this->SetTitle(wxGetApp().GetAppDisplayName());
+    }
+
+    docPanel->Layout();
+}
+
+wxScrolled<wxPanel> *MyFrame::BuildControlsPanel(wxWindow *parent)
 {
     auto controlsPanel = new wxScrolled<wxPanel>(parent, wxID_ANY);
     controlsPanel->SetScrollRate(0, FromDIP(10));
@@ -99,86 +121,95 @@ wxPanel *MyFrame::BuildControlsPanel(wxWindow *parent)
 
     auto mainSizer = new wxBoxSizer(wxVERTICAL);
 
-    auto text = new wxStaticText(controlsPanel, wxID_ANY, "Colors");
-    mainSizer->Add(text, 0, wxALL, FromDIP(5));
+    auto textColor = new wxStaticText(controlsPanel, wxID_ANY, "Colors");
+    mainSizer->Add(textColor, 0, wxALL, FromDIP(5));
 
     auto colorPaneSizer = new wxWrapSizer(wxHORIZONTAL);
-    SetupColorPanes(controlsPanel, colorPaneSizer);
-
+    colorMenu.SetUpColorMenu(controlsPanel, colorPaneSizer, this);
     mainSizer->Add(colorPaneSizer, 0, wxALL, FromDIP(5));
 
-    text = new wxStaticText(controlsPanel, wxID_ANY, "Size");
-    mainSizer->Add(text, 0, wxALL, FromDIP(5));
+    auto textTools = new wxStaticText(controlsPanel, wxID_ANY, "Tools");
+    mainSizer->Add(textTools, 0, wxALL, FromDIP(5));
 
-    auto sizePaneSizer = new wxWrapSizer(wxHORIZONTAL);
-    SetupSizePanes(controlsPanel, sizePaneSizer);
+    auto toolPaneSizer = new wxWrapSizer(wxHORIZONTAL);
+    toolMenu.SetUpToolMenu(controlsPanel, toolPaneSizer, [this]()
+                           { ResetControls(); });
+    mainSizer->Add(toolPaneSizer, 0, wxALL, FromDIP(5));
 
-    mainSizer->Add(sizePaneSizer, 0, wxALL, FromDIP(5));
+    textSize = new wxStaticText(controlsPanel, wxID_ANY, "Size");
+    mainSizer->Add(textSize, 0, wxALL, FromDIP(5));
 
-    mainSizer->AddStretchSpacer();
-    mainSizer->AddSpacer(FromDIP(2));
+    penWidthSizer = new wxWrapSizer(wxHORIZONTAL);
+    sizeMenu.SetUpSizeMenu(controlsPanel, penWidthSizer);
+    mainSizer->Add(penWidthSizer, 0, wxALL, FromDIP(5));
+
+    auto textShape = new wxStaticText(controlsPanel, wxID_ANY, "Shapes");
+    mainSizer->Add(textShape, 0, wxALL, FromDIP(5));
+
+    auto shapePaneSizer = new wxWrapSizer(wxHORIZONTAL);
+    shapeMenu.SetUpShapeMenu(controlsPanel, shapePaneSizer, [this]()
+                             { ResetControls(); });
+    mainSizer->Add(shapePaneSizer, 0, wxALL, FromDIP(5));
 
     controlsPanel->SetSizer(mainSizer);
 
     return controlsPanel;
 }
 
-MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
-    : wxFrame(nullptr, wxID_ANY, title, pos, size)
+MyFrame::MyFrame(wxDocManager *manager, wxFrame *frame, wxWindowID id, const wxString &title,
+                 const wxPoint &pos, const wxSize &size)
+    : wxDocParentFrame(manager, frame, id, title, pos, size)
 {
     wxSplitterWindow *splitter = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_BORDER | wxSP_LIVE_UPDATE);
 
     splitter->SetMinimumPaneSize(FromDIP(150));
 
-    auto controlsPanel = BuildControlsPanel(splitter);
-    canvas = new DrawingCanvas(splitter, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    controlsPanel = BuildControlsPanel(splitter);
+    docPanel = new wxPanel(splitter, wxID_ANY);
+    docPanel->SetSizer(new wxBoxSizer(wxVERTICAL));
 
-    splitter->SplitVertically(controlsPanel, canvas);
+    splitter->SplitVertically(controlsPanel, docPanel);
     splitter->SetSashPosition(FromDIP(100));
 
     this->SetSize(FromDIP(800), FromDIP(500));
     this->SetMinSize({FromDIP(400), FromDIP(200)});
 
-    SelectColorPane(colorPanes[0]);
+    BuildMenuBar();
 }
 
-void MyFrame::SelectColorPane(ColorMenu *pane)
+void MyFrame::BuildMenuBar()
 {
-    for (auto colorPane : colorPanes)
-    {
-        colorPane->selected = (colorPane == pane);
-        colorPane->Refresh();
-    }
-    canvas->SetPenColor(pane->color);
-    selectedColorPane = pane;
+    auto menuBar = new wxMenuBar;
+
+    auto fileMenu = new wxMenu;
+    fileMenu->Append(wxID_NEW);
+    fileMenu->Append(wxID_OPEN);
+    fileMenu->Append(wxID_SAVE);
+    fileMenu->Append(wxID_SAVEAS);
+    idExport = fileMenu->Append(wxID_ANY, "&Export...")->GetId();
+
+    fileMenu->Append(wxID_EXIT);
+
+    menuBar->Append(fileMenu, "&File");
+
+    auto editMenu = new wxMenu;
+    editMenu->Append(wxID_UNDO);
+    editMenu->Append(wxID_REDO);
+    editMenu->AppendSeparator();
+    editMenu->Append(wxID_CUT);
+    editMenu->Append(wxID_COPY);
+    editMenu->Append(wxID_PASTE);
+    editMenu->Append(wxID_DELETE);
+    editMenu->AppendSeparator();
+    editMenu->Append(wxID_SELECTALL);
+
+    menuBar->Append(editMenu, "&Edit");
+
+    SetMenuBar(menuBar);
 }
 
-void MyFrame::SelectSizePane(SizeMenu *pane)
+void MyFrame::ResetControls()
 {
-    for (auto sizePane : sizePanes)
-    {
-        sizePane->selected = (sizePane == pane);
-        sizePane->Refresh();
-    }
-    canvas->SetPenWidth(pane->width);
-}
-
-void MyFrame::OnChooseColor(wxCommandEvent &event)
-{
-    wxColourData data;
-    data.SetChooseFull(true);
-    for (int i = 0; i < 16; ++i)
-    {
-        wxColour color(i * 16, i * 16, i * 16);
-        data.SetCustomColour(i, color);
-    }
-    wxColourDialog dialog(this, &data);
-    if (dialog.ShowModal() == wxID_OK)
-    {
-        wxColourData retData = dialog.GetColourData();
-        wxColour col = retData.GetColour();
-        canvas->SetPenColor(col);
-        selectedColorPane->color = col;
-        selectedColorPane->Refresh();
-    }
+    shapeMenu.SelectShapePane();
+    toolMenu.SelectToolPane();
 }
