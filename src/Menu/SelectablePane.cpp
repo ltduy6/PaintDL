@@ -1,14 +1,16 @@
-#include "SelectableMenu.h"
+#include "SelectablePane.h"
 
-SelectableMenu::SelectableMenu(wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size)
+SelectablePane::SelectablePane(wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size)
     : wxWindow(parent, id, pos, size, wxFULL_REPAINT_ON_RESIZE)
 {
     this->SetBackgroundStyle(wxBG_STYLE_PAINT);
 
-    Bind(wxEVT_PAINT, &SelectableMenu::OnPaint, this);
+    Bind(wxEVT_PAINT, &SelectablePane::OnPaint, this);
+    Bind(wxEVT_ENTER_WINDOW, &SelectablePane::OnMouseEnter, this);
+    Bind(wxEVT_LEAVE_WINDOW, &SelectablePane::OnMouseLeave, this);
 }
 
-void SelectableMenu::OnPaint(wxPaintEvent &event)
+void SelectablePane::OnPaint(wxPaintEvent &event)
 {
     wxAutoBufferedPaintDC dc(this);
     dc.SetBackground(wxBrush(this->GetParent()->GetBackgroundColour()));
@@ -27,7 +29,7 @@ void SelectableMenu::OnPaint(wxPaintEvent &event)
 
         DrawContent(gc, contentRect, roundness);
 
-        if (selected)
+        if (isHover || selected)
         {
             gc->SetPen(wxSystemSettings::GetAppearance().IsDark() ? *wxWHITE_PEN : *wxBLACK_PEN);
             gc->SetBrush(*wxTRANSPARENT_BRUSH);
@@ -39,6 +41,14 @@ void SelectableMenu::OnPaint(wxPaintEvent &event)
     }
 }
 
-void SelectableMenu::OnMouseEnter(wxMouseEvent &event)
+void SelectablePane::OnMouseEnter(wxMouseEvent &event)
 {
+    isHover = true;
+    Refresh();
+}
+
+void SelectablePane::OnMouseLeave(wxMouseEvent &event)
+{
+    isHover = false;
+    Refresh();
 }

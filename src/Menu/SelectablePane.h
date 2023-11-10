@@ -8,10 +8,10 @@
 #include <wx/dc.h>
 #include <wx/dcgraph.h>
 
-class SelectableMenu : public wxWindow
+class SelectablePane : public wxWindow
 {
 public:
-    SelectableMenu(wxWindow *parent, wxWindowID id = wxID_ANY, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize);
+    SelectablePane(wxWindow *parent, wxWindowID id = wxID_ANY, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize);
 
     wxSize DoGetBestSize() const override
     {
@@ -26,4 +26,8 @@ protected:
 private:
     void OnPaint(wxPaintEvent &event);
     void OnMouseEnter(wxMouseEvent &event);
+    void OnMouseLeave(wxMouseEvent &event);
+
+private:
+    bool isHover{false};
 };

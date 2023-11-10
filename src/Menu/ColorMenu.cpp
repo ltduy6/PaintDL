@@ -1,13 +1,53 @@
 #include "ColorMenu.h"
 
-ColorMenu::ColorMenu(wxWindow *parent, wxWindowID id, const wxColor &paneColor, const wxPoint &pos, const wxSize &size)
-    : SelectableMenu(parent, id, pos, size), color(paneColor)
+void ColorMenu::SetUpColorMenu(wxWindow *parent, wxSizer *sizer, wxFrame *frame)
 {
+    wxSize size;
+    for (const auto &color : niceColors)
+    {
+        auto colorPane = new ColorPane(parent, wxID_ANY, wxColour(color));
+        colorPane->Bind(wxEVT_LEFT_DOWN, [this, colorPane](wxMouseEvent &event)
+                        { SelectColorPane(colorPane); });
+        colorPanes.push_back(colorPane);
+        sizer->Add(colorPane, 0, wxRIGHT | wxBOTTOM, frame->FromDIP(5));
+
+        size = colorPane->GetBestSize();
+    }
+    auto customColor = new RoundedButton(parent, wxID_ANY, "color-wheel.png", size);
+    customColor->Bind(wxEVT_LEFT_DOWN, [this, frame](wxMouseEvent &event)
+                      { SelectCustomColor(frame); });
+    sizer->Add(customColor, 0, wxRIGHT | wxBOTTOM, frame->FromDIP(5));
+
+    SelectColorPane(colorPanes[0]);
 }
 
-void ColorMenu::DrawContent(wxGraphicsContext *gc, const wxRect &rect, int roundness) const
+void ColorMenu::SelectColorPane(ColorPane *pane)
 {
-    gc->SetPen(wxPen(color));
-    gc->SetBrush(wxBrush(color));
-    gc->DrawRoundedRectangle(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight(), roundness);
+    for (auto colorPane : colorPanes)
+    {
+        colorPane->selected = (colorPane == pane);
+        colorPane->Refresh();
+    }
+    selectedColorPane = pane;
+    MyApp::GetStrokeSettings().color = pane->color;
+}
+
+void ColorMenu::SelectCustomColor(wxWindow *parent)
+{
+    wxColourData data;
+    data.SetChooseFull(true);
+    for (int i = 0; i < 16; ++i)
+    {
+        wxColour color(i * 16, i * 16, i * 16);
+        data.SetCustomColour(i, color);
+    }
+    wxColourDialog dialog(parent, &data);
+    if (dialog.ShowModal() == wxID_OK)
+    {
+        wxColourData retData = dialog.GetColourData();
+        wxColour col = retData.GetColour();
+        MyApp::GetStrokeSettings().color = col;
+        selectedColorPane->color = col;
+        selectedColorPane->Refresh();
+    }
 }

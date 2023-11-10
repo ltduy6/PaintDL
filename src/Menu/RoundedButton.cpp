@@ -34,7 +34,6 @@ void RoundedButton::OnPaint(wxPaintEvent &event)
         {
             gc->DrawBitmap(bitmap, selectionRect.GetX(), selectionRect.GetY(), selectionRect.GetWidth(), selectionRect.GetHeight());
         }
-
         delete gc;
     }
 }

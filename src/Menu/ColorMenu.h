@@ -1,14 +1,28 @@
 #pragma once
 
-#include "SelectableMenu.h"
+#include "ColorPane.h"
+#include "RoundedButton.h"
+#include "../MyApp.h"
 
-class ColorMenu : public SelectableMenu
+#include <wx/wx.h>
+#include <wx/wrapsizer.h>
+#include <wx/splitter.h>
+#include <wx/colordlg.h>
+
+class ColorMenu
 {
 public:
-    ColorMenu(wxWindow *parent, wxWindowID id, const wxColor &paneColor, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize);
-
-    wxColour color;
+    void SetUpColorMenu(wxWindow *parent, wxSizer *size, wxFrame *frame);
 
 private:
-    virtual void DrawContent(wxGraphicsContext *gc, const wxRect &rect, int roundness) const override;
+    void SelectColorPane(ColorPane *pane);
+    void SelectCustomColor(wxWindow *parent);
+
+private:
+    ColorPane *selectedColorPane;
+    std::vector<ColorPane *> colorPanes;
+    const std::vector<std::string> niceColors = {"#000000", "#ffffff", "#fd7f6f",
+                                                 "#7eb0d5", "#b2e061", "#bd7ebe",
+                                                 "#ffb55a", "#ffee65", "#beb9db",
+                                                 "#fdcce5", "#8bd3c7"};
 };

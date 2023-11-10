@@ -1,11 +1,18 @@
-#include "SelectableMenu.h"
-class SizeMenu : public SelectableMenu
+#pragma once
+
+#include "SizePane.h"
+#include "../MyApp.h"
+#include <vector>
+
+class SizeMenu
 {
 public:
-    SizeMenu(wxWindow *parent, wxWindowID id, int width, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize);
-
-    int width{3};
+    void SetUpSizeMenu(wxWindow *parent, wxSizer *sizer);
 
 private:
-    virtual void DrawContent(wxGraphicsContext *gc, const wxRect &rect, int roundness) const override;
+    void SelectSizePane(SizePane *pane);
+
+private:
+    std::vector<SizePane *> sizePanes;
+    const std::vector<int> penWidths = {1, 3, 5, 8};
 };

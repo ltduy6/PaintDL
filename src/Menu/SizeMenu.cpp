@@ -1,16 +1,26 @@
 #include "SizeMenu.h"
 
-SizeMenu::SizeMenu(wxWindow *parent, wxWindowID id, int width, const wxPoint &pos, const wxSize &size)
-    : SelectableMenu(parent, id, pos, size), width(width)
+void SizeMenu::SetUpSizeMenu(wxWindow *parent, wxSizer *sizer)
 {
+    for (const auto &i : penWidths)
+    {
+        auto sizePane = new SizePane(parent, wxID_ANY, i);
+
+        sizePane->Bind(wxEVT_LEFT_DOWN, [this, sizePane](wxMouseEvent &event)
+                       { SelectSizePane(sizePane); });
+
+        sizePanes.push_back(sizePane);
+        sizer->Add(sizePane, 0, wxRIGHT | wxBOTTOM, parent->FromDIP(5));
+    }
+    SelectSizePane(sizePanes[2]);
 }
 
-void SizeMenu::DrawContent(wxGraphicsContext *gc, const wxRect &rect, int roundness) const
+void SizeMenu::SelectSizePane(SizePane *pane)
 {
-    gc->SetPen(wxPen(*wxTRANSPARENT_PEN));
-    gc->SetBrush(wxBrush(*wxBLACK_BRUSH));
-    wxSize size{FromDIP(15), FromDIP(width)};
-    gc->DrawRectangle(rect.GetX() + rect.GetWidth() / 2 - size.GetWidth() / 2,
-                      rect.GetY() + rect.GetHeight() / 2 - size.GetHeight() / 2,
-                      size.GetWidth(), size.GetHeight());
+    for (auto sizePane : sizePanes)
+    {
+        sizePane->selected = (sizePane == pane);
+        sizePane->Refresh();
+    }
+    MyApp::GetStrokeSettings().width = pane->width;
 }
