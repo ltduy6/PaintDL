@@ -52,80 +52,89 @@ void DrawingView::OnDraw(wxDC *dc)
 
     if (gc)
     {
-        DrawingVisitor visistor{*gc};
-
-        for (const auto &shape : GetDocument()->shapes)
+        std::cout << "Object\n";
+        for (const auto &obj : GetDocument()->objects)
         {
-            std::visit(visistor, shape);
+            obj.Draw(*gc);
         }
+        std::cout << "SelectionBox\n";
+
+        if (selectionBox)
+        {
+            selectionBox->Draw(*gc);
+        }
+
+        std::cout << "ShapeCreator\n";
+
+        shapeCreator.Draw(*gc);
     }
 }
 
 void DrawingView::OnMouseDown(wxPoint pt)
 {
-    lastDragStart = pt;
-    GetDocument()->shapes.push_back(ShapeFactory::CreateShape(MyApp::GetStrokeSettings(), pt));
-    GetDocument()->Modify(true);
+    if (MyApp::GetStrokeSettings().currentTool == ToolType::Transform)
+    {
+        if (selectionBox.has_value())
+        {
+            selectionBox->StartDragging(pt);
+        }
+
+        bool clickedOnCurrentSelection = selectionBox.has_value() && selectionBox->isDragging();
+
+        if (!clickedOnCurrentSelection)
+        {
+            std::cout << GetDocument()->objects.size() << std::endl;
+            auto iterator = std::find_if(GetDocument()->objects.rbegin(), GetDocument()->objects.rend(), [&](auto &obj)
+                                         { return obj.GetBoundingBox().Contains(ObjectSpace::ToObjectCoordinates(obj, pt)); });
+            std::cout << GetDocument()->objects.size() + 1 << std::endl;
+            selectionBox = (iterator != GetDocument()->objects.rend()) ? std::make_optional(SelectionBox{*iterator, MyApp::GetStrokeSettings().selectionHandleWidth}) : std::nullopt;
+
+            if (selectionBox.has_value())
+            {
+                std::cout << GetDocument()->objects.size() << std::endl;
+                selectionBox->StartDragging(pt);
+            }
+        }
+    }
+    else
+    {
+        selectionBox = {};
+        shapeCreator.Start(MyApp::GetStrokeSettings(), pt);
+    }
 }
 
 void DrawingView::OnMouseDrag(wxPoint pt)
 {
-    auto &currentShape = GetDocument()->shapes.back();
-
-    std::visit(Visitor{[&](Path &path)
-                       {
-                           path.points.push_back(pt);
-                       },
-                       [&](Rect &rect)
-                       {
-                           auto left = std::min(lastDragStart.x, pt.x);
-                           auto right = std::max(lastDragStart.x, pt.x);
-                           auto top = std::min(lastDragStart.y, pt.y);
-                           auto bottom = std::max(lastDragStart.y, pt.y);
-
-                           rect.rect.SetLeft(left);
-                           rect.rect.SetRight(right);
-                           rect.rect.SetTop(top);
-                           rect.rect.SetBottom(bottom);
-                       },
-                       [&](Circle &circle)
-                       {
-                           auto left = std::min(lastDragStart.x, pt.x);
-                           auto right = std::max(lastDragStart.x, pt.x);
-                           auto top = std::min(lastDragStart.y, pt.y);
-                           auto bottom = std::max(lastDragStart.y, pt.y);
-
-                           circle.rect.SetLeft(left);
-                           circle.rect.SetRight(right);
-                           circle.rect.SetTop(top);
-                           circle.rect.SetBottom(bottom);
-                       },
-                       [&](ITriangle &triangle)
-                       {
-                           triangle.drag = pt;
-                       },
-                       [&](RTriangle &triangle)
-                       {
-                           triangle.drag = pt;
-                       },
-                       [&](Diamond &diamond)
-                       {
-                           auto left = std::min(lastDragStart.x, pt.x);
-                           auto right = std::max(lastDragStart.x, pt.x);
-                           auto top = std::min(lastDragStart.y, pt.y);
-                           auto bottom = std::max(lastDragStart.y, pt.y);
-
-                           diamond.rect.SetLeft(left);
-                           diamond.rect.SetRight(right);
-                           diamond.rect.SetTop(top);
-                           diamond.rect.SetBottom(bottom);
-                       }},
-               currentShape);
+    if (MyApp::GetStrokeSettings().currentTool == ToolType::Transform)
+    {
+        if (selectionBox.has_value() && selectionBox->isDragging())
+        {
+            selectionBox->Drag(pt);
+            GetDocument()->Modify(true);
+        }
+    }
+    else
+    {
+        shapeCreator.Update(pt);
+    }
 }
 
 void DrawingView::OnMouseDragEnd()
 {
     // Nothing to do here
+    if (MyApp::GetStrokeSettings().currentTool == ToolType::Transform)
+    {
+        if (selectionBox.has_value())
+        {
+            selectionBox->FinishDragging();
+        }
+    }
+    else
+    {
+        selectionBox = {};
+        // GetDocument()->objects.push_back(shapeCreator.FinishAndGenerateObject());
+        // GetDocument()->Modify(true);
+    }
 }
 
 void DrawingView::OnClear()
@@ -142,7 +151,29 @@ void DrawingView::AddPointToCurrentLine(wxPoint pt)
     GetDocument()->Modify(true);
 }
 
+void DrawingView::PredefinedRotate(double angle)
+{
+    if (selectionBox.has_value())
+    {
+        selectionBox->PredefinedRotate(angle);
+        GetDocument()->Modify(true);
+        GetDocument()->UpdateAllViews();
+    }
+}
+
 DrawingDocument *DrawingView::GetDocument() const
 {
     return wxStaticCast(wxView::GetDocument(), DrawingDocument);
+}
+
+CanvasObject DrawingView::GetCanvasObject()
+{
+    // TODO: insert return statement here
+    return shapeCreator.FinishAndGenerateObject();
+}
+
+ShapeCreator &DrawingView::GetShapeCreator()
+{
+    // TODO: insert return statement here
+    return shapeCreator;
 }

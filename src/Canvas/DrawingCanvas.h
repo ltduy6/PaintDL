@@ -19,6 +19,7 @@ public:
     void SetMenu(wxMenu *menu);
     void BuildContextMenu();
     void ShowExportDialog();
+    DrawingView *GetView() const;
 
 private:
     void OnPaint(wxPaintEvent &event);

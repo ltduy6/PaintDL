@@ -2,9 +2,11 @@
 
 #include <wx/docview.h>
 #include <wx/stdstream.h>
+#include <wx/cmdproc.h>
 #include <iostream>
 #include "Shape/Path.h"
 #include "Shape/Shape.h"
+#include "Canvas/CanvasObject.h"
 
 class DrawingDocument : public wxDocument
 {
@@ -15,5 +17,7 @@ public:
 public:
     std::vector<Path> lines{};
     std::vector<Shape> shapes{};
+    std::vector<CanvasObject> objects{};
+    wxCommandProcessor commandProcessor{};
     wxDECLARE_DYNAMIC_CLASS(DrawingDocument);
 };

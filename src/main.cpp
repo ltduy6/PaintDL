@@ -15,6 +15,7 @@
 #include "Menu/SizeMenu.h"
 #include "Menu/ShapeMenu.h"
 #include "Menu/ToolMenu.h"
+#include "Menu/ImageMenu.h"
 
 #include "Canvas/DrawingCanvas.h"
 #include "DrawingDocument.h"
@@ -41,12 +42,15 @@ private:
     SizeMenu sizeMenu{};
     ShapeMenu shapeMenu{};
     ToolMenu toolMenu{};
+    ImageMenu imageMenu{};
 
     wxPanel *docPanel;
     wxScrolled<wxPanel> *controlsPanel;
 
     wxStaticText *textSize;
     wxSizer *penWidthSizer;
+
+    wxMenu *editMenu{nullptr};
 
     int idExport{};
 
@@ -71,7 +75,14 @@ bool MyApp::OnInit()
     m_frame = new MyFrame(m_docManager.get(), nullptr, wxID_ANY, wxGetApp().GetAppDisplayName());
     m_frame->Show(true);
 
+    m_strokeSettings.selectionHandleWidth = m_frame->FromDIP(10);
+
     return true;
+}
+
+int MyApp::OnExit()
+{
+    return wxApp::OnExit();
 }
 
 StrokeSettings &MyApp::GetStrokeSettings()
@@ -101,6 +112,21 @@ void MyFrame::SetupCanvasForView(DrawingView *view)
             { canvas->ShowExportDialog(); },
             idExport);
 
+        imageMenu.CallRotate(canvas);
+        view->GetDocument()->GetCommandProcessor()->SetEditMenu(editMenu);
+        view->GetDocument()->GetCommandProcessor()->Initialize();
+
+        this->Bind(wxEVT_MENU, [&](wxCommandEvent &event)
+                   {
+            if(event.GetId() == wxID_UNDO)
+            {
+                view->GetDocument()->GetCommandProcessor()->Undo();
+            }
+            else if(event.GetId() == wxID_REDO)
+            {
+                view->GetDocument()->GetCommandProcessor()->Redo();
+            } });
+
         view->SetFrame(this);
     }
     else
@@ -121,35 +147,47 @@ wxScrolled<wxPanel> *MyFrame::BuildControlsPanel(wxWindow *parent)
 
     auto mainSizer = new wxBoxSizer(wxVERTICAL);
 
-    auto textColor = new wxStaticText(controlsPanel, wxID_ANY, "Colors");
-    mainSizer->Add(textColor, 0, wxALL, FromDIP(5));
+    auto addGroup = [this, controlsPanel, mainSizer](const wxString &title)
+    {
+        auto text = new wxStaticText(controlsPanel, wxID_ANY, title);
+        mainSizer->Add(text, 0, wxALL, FromDIP(5));
 
-    auto colorPaneSizer = new wxWrapSizer(wxHORIZONTAL);
-    colorMenu.SetUpColorMenu(controlsPanel, colorPaneSizer, this);
-    mainSizer->Add(colorPaneSizer, 0, wxALL, FromDIP(5));
+        auto wrapSizer = new wxWrapSizer(wxHORIZONTAL);
+        if (title == "Colors")
+        {
+            colorMenu.SetUpColorMenu(controlsPanel, wrapSizer, this);
+        }
+        else if (title == "Tools")
+        {
+            toolMenu.SetUpToolMenu(controlsPanel, wrapSizer, [this]()
+                                   { ResetControls(); });
+        }
+        else if (title == "Image")
+        {
+            imageMenu.SetUpImageMenu(controlsPanel, wrapSizer);
+        }
+        else if (title == "Size")
+        {
+            sizeMenu.SetUpSizeMenu(controlsPanel, wrapSizer);
+        }
+        else if (title == "Shapes")
+        {
+            shapeMenu.SetUpShapeMenu(controlsPanel, wrapSizer, [this]()
+                                     { ResetControls(); });
+        }
+        else
+        {
+            throw std::runtime_error("Unknown group title");
+        }
 
-    auto textTools = new wxStaticText(controlsPanel, wxID_ANY, "Tools");
-    mainSizer->Add(textTools, 0, wxALL, FromDIP(5));
+        mainSizer->Add(wrapSizer, 0, wxALL, FromDIP(5));
+    };
 
-    auto toolPaneSizer = new wxWrapSizer(wxHORIZONTAL);
-    toolMenu.SetUpToolMenu(controlsPanel, toolPaneSizer, [this]()
-                           { ResetControls(); });
-    mainSizer->Add(toolPaneSizer, 0, wxALL, FromDIP(5));
-
-    textSize = new wxStaticText(controlsPanel, wxID_ANY, "Size");
-    mainSizer->Add(textSize, 0, wxALL, FromDIP(5));
-
-    penWidthSizer = new wxWrapSizer(wxHORIZONTAL);
-    sizeMenu.SetUpSizeMenu(controlsPanel, penWidthSizer);
-    mainSizer->Add(penWidthSizer, 0, wxALL, FromDIP(5));
-
-    auto textShape = new wxStaticText(controlsPanel, wxID_ANY, "Shapes");
-    mainSizer->Add(textShape, 0, wxALL, FromDIP(5));
-
-    auto shapePaneSizer = new wxWrapSizer(wxHORIZONTAL);
-    shapeMenu.SetUpShapeMenu(controlsPanel, shapePaneSizer, [this]()
-                             { ResetControls(); });
-    mainSizer->Add(shapePaneSizer, 0, wxALL, FromDIP(5));
+    addGroup("Colors");
+    addGroup("Tools");
+    addGroup("Image");
+    addGroup("Size");
+    addGroup("Shapes");
 
     controlsPanel->SetSizer(mainSizer);
 
@@ -192,7 +230,7 @@ void MyFrame::BuildMenuBar()
 
     menuBar->Append(fileMenu, "&File");
 
-    auto editMenu = new wxMenu;
+    editMenu = new wxMenu;
     editMenu->Append(wxID_UNDO);
     editMenu->Append(wxID_REDO);
     editMenu->AppendSeparator();

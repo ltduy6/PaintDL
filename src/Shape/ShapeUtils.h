@@ -9,15 +9,7 @@ namespace ShapeUltils
     static wxRect2DDouble CalculateBoundingBox(const Shape &shape)
     {
         wxRect2DDouble boundingBox;
-        std::visit(Visitor{[&boundingBox](const Rect &rect)
-                           {
-                               boundingBox = rect.rect;
-                           },
-                           [&boundingBox](const Circle &circle)
-                           {
-                               boundingBox = circle.rect;
-                           },
-                           [&boundingBox](const Path &path)
+        std::visit(Visitor{[&boundingBox](const Path &path)
                            {
                                double minX = std::numeric_limits<double>::max();
                                double minY = std::numeric_limits<double>::max();
@@ -32,6 +24,26 @@ namespace ShapeUltils
                                    maxY = std::max(maxY, pt.m_y);
                                }
                                boundingBox = wxRect2DDouble(minX - path.width / 2, minY - path.width / 2, maxX - minX + path.width, maxY - minY + path.width);
+                           },
+                           [&boundingBox](const Rect &rect)
+                           {
+                               boundingBox = rect.rect;
+                           },
+                           [&boundingBox](const Circle &circle)
+                           {
+                               boundingBox = circle.rect;
+                           },
+                           [&boundingBox](const ITriangle &triangle)
+                           {
+                               boundingBox = triangle.rect;
+                           },
+                           [&boundingBox](const RTriangle &triangle)
+                           {
+                               boundingBox = triangle.rect;
+                           },
+                           [&boundingBox](const Diamond &diamond)
+                           {
+                               boundingBox = diamond.rect;
                            }},
                    shape);
         return boundingBox;

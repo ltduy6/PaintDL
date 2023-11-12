@@ -3,7 +3,12 @@
 #include <wx/graphics.h>
 #include <wx/dcclient.h>
 #include <wx/wx.h>
-#include "Shape/Shape.h"
+#include "../Shape/Circle.h"
+#include "../Shape/Diamond.h"
+#include "../Shape/ITriangle.h"
+#include "../Shape/Path.h"
+#include "../Shape/Rect.h"
+#include "../Shape/RTriangle.h"
 
 struct DrawingVisitor
 {
@@ -36,9 +41,9 @@ struct DrawingVisitor
         gc.SetPen(wxPen(triangle.color, triangle.width));
 
         wxPoint2DDouble points[3];
-        points[0] = {(triangle.drag.m_x + triangle.origin.m_x) / 2, std::min(triangle.drag.m_y, triangle.origin.m_y)};
-        points[1] = {std::min(triangle.drag.m_x, triangle.origin.m_x), std::max(triangle.drag.m_y, triangle.origin.m_y)};
-        points[2] = {std::max(triangle.drag.m_x, triangle.origin.m_x), std::max(triangle.drag.m_y, triangle.origin.m_y)};
+        points[0] = {triangle.rect.GetLeftTop() + wxPoint2DDouble{triangle.rect.m_width / 2, 0}};
+        points[1] = {triangle.rect.GetRightBottom()};
+        points[2] = {triangle.rect.GetLeftBottom()};
 
         wxGraphicsPath path = gc.CreatePath();
         path.MoveToPoint(points[0]);
@@ -55,9 +60,9 @@ struct DrawingVisitor
         gc.SetPen(wxPen(triangle.color, triangle.width));
 
         wxPoint2DDouble points[3];
-        points[0] = triangle.origin;
-        points[1] = triangle.drag;
-        points[2] = {std::min(triangle.drag.m_x, triangle.origin.m_x), std::max(triangle.drag.m_y, triangle.origin.m_y)};
+        points[0] = triangle.rect.GetLeftTop();
+        points[1] = triangle.rect.GetLeftBottom();
+        points[2] = triangle.rect.GetRightBottom();
 
         wxGraphicsPath path = gc.CreatePath();
         path.MoveToPoint(points[0]);

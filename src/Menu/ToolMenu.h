@@ -10,8 +10,10 @@ class ToolMenu
 public:
     void SetUpToolMenu(wxWindow *parent, wxSizer *sizer, std::function<void()> reset);
     void SelectToolPane();
+    void AddCallBack(std::function<void()> callBack);
 
 private:
     std::vector<ToolsPane *> toolPanes;
-    const std::vector<ToolType> toolTypes = {ToolType::Brush};
+    std::vector<std::function<void()>> callBacks;
+    const std::vector<ToolType> toolTypes = {ToolType::Brush, ToolType::Transform};
 };

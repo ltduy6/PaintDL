@@ -1,6 +1,8 @@
 #include <wx/graphics.h>
 #include <wx/dcbuffer.h>
 #include "DrawingCanvas.h"
+#include "../Command/AddCommand.h"
+#include "../MyApp.h"
 #include <iostream>
 
 DrawingCanvas::DrawingCanvas(wxWindow *parent, DrawingView *view, wxWindowID id, const wxPoint &pos, const wxSize &size)
@@ -53,11 +55,17 @@ void DrawingCanvas::ShowExportDialog()
     }
 }
 
+DrawingView *DrawingCanvas::GetView() const
+{
+    return view;
+}
+
 void DrawingCanvas::OnMouseDown(wxMouseEvent &event)
 {
     view->OnMouseDown(event.GetPosition());
     isDragging = true;
     Refresh();
+    std::cout << "mouse down" << std::endl;
 }
 
 void DrawingCanvas::OnMouseMove(wxMouseEvent &event)
@@ -75,6 +83,10 @@ void DrawingCanvas::OnMouseUp(wxMouseEvent &event)
     {
         isDragging = false;
         view->OnMouseDragEnd();
+        if (MyApp::GetStrokeSettings().currentTool != ToolType::Transform)
+        {
+            view->GetDocument()->GetCommandProcessor()->Submit(new AddCommand(this));
+        }
     }
 }
 

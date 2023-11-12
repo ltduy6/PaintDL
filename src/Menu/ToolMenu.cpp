@@ -8,12 +8,17 @@ void ToolMenu::SetUpToolMenu(wxWindow *parent, wxSizer *sizer, std::function<voi
         toolPane->Bind(wxEVT_LEFT_DOWN, [this, toolType, reset](wxMouseEvent &event)
                        { 
                         MyApp::GetStrokeSettings().currentTool = toolType;
-                        MyApp::GetStrokeSettings().currentShape = ToolType::Path;
-                        reset(); });
+                        if(toolType == ToolType::Brush)
+                            MyApp::GetStrokeSettings().currentShape = ToolType::Path;
+                        else if(toolType == ToolType::Transform)
+                            MyApp::GetStrokeSettings().currentShape = ToolType::None;
+                        for(const auto& callBack : callBacks)
+                            callBack(); });
         toolPanes.push_back(toolPane);
         sizer->Add(toolPane, 0, wxRIGHT | wxBOTTOM, parent->FromDIP(5));
     }
 
+    AddCallBack(reset);
     MyApp::GetStrokeSettings().currentTool = ToolType::Brush;
     MyApp::GetStrokeSettings().currentShape = ToolType::Path;
     reset();
@@ -26,4 +31,9 @@ void ToolMenu::SelectToolPane()
         toolPane->selected = (toolPane->getToolType() == MyApp::GetStrokeSettings().currentTool);
         toolPane->Refresh();
     }
+}
+
+void ToolMenu::AddCallBack(std::function<void()> callBack)
+{
+    callBacks.push_back(callBack);
 }

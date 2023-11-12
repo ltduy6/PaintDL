@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 #include "Shape.h"
-#include "StrokeSettings.h"
+#include "../StrokeSettings.h"
 
 struct ShapeFactory
 {
@@ -18,9 +18,9 @@ struct ShapeFactory
         case ToolType::Circle:
             return Circle{{origin2D.m_x, origin2D.m_y, 0, 0}, settings.color, settings.width};
         case ToolType::ITriangle:
-            return ITriangle{origin2D, origin2D, settings.color, settings.width};
+            return ITriangle{{origin2D.m_x, origin2D.m_y, 0, 0}, origin2D, origin2D, settings.color, settings.width};
         case ToolType::RTriangle:
-            return RTriangle{origin2D, origin2D, settings.color, settings.width};
+            return RTriangle{{origin2D.m_x, origin2D.m_y, 0, 0}, origin2D, origin2D, settings.color, settings.width};
         case ToolType::Diamond:
             return Diamond{{origin2D.m_x, origin2D.m_y, 0, 0}, settings.color, settings.width};
         default:

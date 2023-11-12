@@ -23,6 +23,8 @@ DrawingDocument.cpp
 Canvas/DrawingCanvas.cpp 
 Canvas/CanvasObject.cpp
 Canvas/ObjectSpace.cpp
+Canvas/SelectionBox.cpp
+Canvas/ShapeCreator.cpp
 # Menu folder
 Menu/SelectablePane.cpp 
 Menu/ColorPane.cpp 
@@ -33,7 +35,10 @@ Menu/ToolsPane.cpp
 Menu/ColorMenu.cpp
 Menu/SizeMenu.cpp
 Menu/ShapeMenu.cpp
-Menu/ToolMenu.cpp)
+Menu/ToolMenu.cpp
+Menu/ImageMenu.cpp
+# Command folder
+Command/AddCommand.cpp)
 
 include(${wxWidgets_USE_FILE})
 
