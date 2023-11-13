@@ -38,7 +38,8 @@ Menu/ShapeMenu.cpp
 Menu/ToolMenu.cpp
 Menu/ImageMenu.cpp
 # Command folder
-Command/AddCommand.cpp)
+Command/AddCommand.cpp
+Command/SelectionCommand.cpp)
 
 include(${wxWidgets_USE_FILE})
 

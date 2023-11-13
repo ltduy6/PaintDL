@@ -6,8 +6,8 @@ void SizeMenu::SetUpSizeMenu(wxWindow *parent, wxSizer *sizer)
     {
         auto sizePane = new SizePane(parent, wxID_ANY, i);
 
-        sizePane->Bind(wxEVT_LEFT_DOWN, [this, sizePane](wxMouseEvent &event)
-                       { SelectSizePane(sizePane); });
+        sizePane->AddCallback([this, sizePane]()
+                              { SelectSizePane(sizePane); });
 
         sizePanes.push_back(sizePane);
         sizer->Add(sizePane, 0, wxRIGHT | wxBOTTOM, parent->FromDIP(5));

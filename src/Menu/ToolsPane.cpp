@@ -41,6 +41,24 @@ void ToolsPane::DrawContent(wxGraphicsContext *gc, const wxRect &rect, int round
         }
         break;
     }
+    case ToolType::Rotate:
+    {
+        wxBitmap bitmap("src/Assets/rotate.png", wxBITMAP_TYPE_PNG);
+        if (bitmap.IsOk())
+        {
+            gc->DrawBitmap(bitmap, rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight());
+        }
+        break;
+    }
+    case ToolType::CustomColor:
+    {
+        wxBitmap bitmap("src/Assets/color-wheel.png", wxBITMAP_TYPE_PNG);
+        if (bitmap.IsOk())
+        {
+            gc->DrawBitmap(bitmap, rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight());
+        }
+        break;
+    }
     default:
         break;
     }

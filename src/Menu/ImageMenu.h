@@ -10,10 +10,10 @@ class ImageMenu
 public:
     void SetUpImageMenu(wxWindow *parent, wxSizer *sizer);
     void CallRotate(DrawingCanvas *canvas);
-    wxButton *GetRotatePane() const;
+    ToolsPane *GetRotatePane() const;
 
 private:
-    wxButton *rotatePane;
+    ToolsPane *rotatePane{};
     wxMenu *rotateMenu;
     const std::vector<ToolType> imageTypes = {ToolType::Rotate};
 };

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ColorPane.h"
-#include "RoundedButton.h"
+#include "ToolsPane.h"
 #include "../MyApp.h"
 
 #include <wx/wx.h>

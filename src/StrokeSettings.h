@@ -3,15 +3,10 @@
 
 enum class ToolType
 {
-    Path,
-    Rect,
-    Circle,
-    ITriangle,
-    RTriangle,
-    Diamond,
     Brush,
     Transform,
     Rotate,
+    CustomColor,
     None
 };
 
@@ -22,7 +17,8 @@ enum class ShapeType
     Circle,
     ITriangle,
     RTriangle,
-    Diamond
+    Diamond,
+    None
 };
 
 struct StrokeSettings
@@ -31,6 +27,6 @@ struct StrokeSettings
     int width{3};
     double selectionHandleWidth;
 
-    ToolType currentShape{ToolType::Path};
+    ShapeType currentShape{ShapeType::Path};
     ToolType currentTool{ToolType::Brush};
 };

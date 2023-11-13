@@ -52,19 +52,15 @@ void DrawingView::OnDraw(wxDC *dc)
 
     if (gc)
     {
-        std::cout << "Object\n";
         for (const auto &obj : GetDocument()->objects)
         {
-            obj.Draw(*gc);
+            obj.get().Draw(*gc);
         }
-        std::cout << "SelectionBox\n";
 
         if (selectionBox)
         {
             selectionBox->Draw(*gc);
         }
-
-        std::cout << "ShapeCreator\n";
 
         shapeCreator.Draw(*gc);
     }
@@ -83,15 +79,13 @@ void DrawingView::OnMouseDown(wxPoint pt)
 
         if (!clickedOnCurrentSelection)
         {
-            std::cout << GetDocument()->objects.size() << std::endl;
             auto iterator = std::find_if(GetDocument()->objects.rbegin(), GetDocument()->objects.rend(), [&](auto &obj)
-                                         { return obj.GetBoundingBox().Contains(ObjectSpace::ToObjectCoordinates(obj, pt)); });
+                                         { return obj.get().GetBoundingBox().Contains(ObjectSpace::ToObjectCoordinates(obj, pt)); });
             std::cout << GetDocument()->objects.size() + 1 << std::endl;
             selectionBox = (iterator != GetDocument()->objects.rend()) ? std::make_optional(SelectionBox{*iterator, MyApp::GetStrokeSettings().selectionHandleWidth}) : std::nullopt;
 
             if (selectionBox.has_value())
             {
-                std::cout << GetDocument()->objects.size() << std::endl;
                 selectionBox->StartDragging(pt);
             }
         }
@@ -109,6 +103,7 @@ void DrawingView::OnMouseDrag(wxPoint pt)
     {
         if (selectionBox.has_value() && selectionBox->isDragging())
         {
+            isModified = true;
             selectionBox->Drag(pt);
             GetDocument()->Modify(true);
         }
@@ -132,8 +127,6 @@ void DrawingView::OnMouseDragEnd()
     else
     {
         selectionBox = {};
-        // GetDocument()->objects.push_back(shapeCreator.FinishAndGenerateObject());
-        // GetDocument()->Modify(true);
     }
 }
 
@@ -161,6 +154,16 @@ void DrawingView::PredefinedRotate(double angle)
     }
 }
 
+void DrawingView::Refresh()
+{
+    selectionBox = {};
+}
+
+bool DrawingView::GetIsModified() const
+{
+    return isModified && selectionBox.has_value();
+}
+
 DrawingDocument *DrawingView::GetDocument() const
 {
     return wxStaticCast(wxView::GetDocument(), DrawingDocument);
@@ -176,4 +179,10 @@ ShapeCreator &DrawingView::GetShapeCreator()
 {
     // TODO: insert return statement here
     return shapeCreator;
+}
+
+SelectionBox &DrawingView::GetSelectionBox()
+{
+    // TODO: insert return statement here
+    return selectionBox.value();
 }

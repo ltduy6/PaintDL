@@ -6,8 +6,8 @@ void ShapeMenu::SetUpShapeMenu(wxWindow *parent, wxSizer *sizer, std::function<v
     {
         auto shapePane = new ShapePane(parent, wxID_ANY, i);
 
-        shapePane->Bind(wxEVT_LEFT_DOWN, [this, i, reset](wxMouseEvent &event)
-                        { 
+        shapePane->AddCallback([this, i, reset]()
+                               { 
                             MyApp::GetStrokeSettings().currentShape = i;
                             MyApp::GetStrokeSettings().currentTool = ToolType::None;
                             reset(); });
@@ -24,4 +24,10 @@ void ShapeMenu::SelectShapePane()
         shapePane->selected = (shapePane->type == MyApp::GetStrokeSettings().currentShape);
         shapePane->Refresh();
     }
+}
+
+void ShapeMenu::AddCallBack(std::function<void()> callBack)
+{
+    for (const auto &shapePane : shapePanes)
+        shapePane->AddCallback(callBack);
 }

@@ -2,6 +2,7 @@
 #include <wx/wx.h>
 #include <wx/graphics.h>
 #include <wx/dcbuffer.h>
+#include <functional>
 
 #include <string>
 
@@ -15,12 +16,19 @@ public:
         return FromDIP(wxSize(35, 35));
     }
 
+    void SetFinished(bool isFinished);
+    void AddCallback(std::function<void()> callback);
+
 private:
     void OnPaint(wxPaintEvent &event);
     void OnHover(wxMouseEvent &event);
     void OnLeave(wxMouseEvent &event);
+    void OnMoveUp(wxMouseEvent &event);
+    void OnMoveDown(wxMouseEvent &event);
 
 private:
     std::string path{"src/Assets/"};
+    std::vector<std::function<void()>> callbacks;
     bool isHovered{false};
+    bool isHold{false};
 };

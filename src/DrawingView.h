@@ -22,6 +22,9 @@ public:
     bool OnClose(bool deleteWindow = true) override;
 
     void PredefinedRotate(double angle);
+    void Refresh();
+
+    bool GetIsModified() const;
 
     // Setting the Frame title
     void OnChangeFilename() override;
@@ -29,6 +32,7 @@ public:
     DrawingDocument *GetDocument() const;
     CanvasObject GetCanvasObject();
     ShapeCreator &GetShapeCreator();
+    SelectionBox &GetSelectionBox();
 
     wxDECLARE_DYNAMIC_CLASS(DrawingView);
 
@@ -39,4 +43,5 @@ private:
     wxPoint lastDragStart{};
     ShapeCreator shapeCreator{};
     std::optional<SelectionBox> selectionBox{};
+    bool isModified{false};
 };

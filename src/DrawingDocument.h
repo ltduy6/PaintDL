@@ -17,7 +17,7 @@ public:
 public:
     std::vector<Path> lines{};
     std::vector<Shape> shapes{};
-    std::vector<CanvasObject> objects{};
+    std::vector<std::reference_wrapper<CanvasObject>> objects{};
     wxCommandProcessor commandProcessor{};
     wxDECLARE_DYNAMIC_CLASS(DrawingDocument);
 };

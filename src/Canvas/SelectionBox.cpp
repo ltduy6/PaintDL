@@ -4,6 +4,18 @@
 
 SelectionBox::SelectionBox(CanvasObject &object, double handleWidth) : m_object(object), m_handleWidth(handleWidth)
 {
+    m_oldTransformation = m_object.get().GetTransformation();
+}
+
+Transformation SelectionBox::GetTransformation() const
+{
+    return m_oldTransformation;
+}
+
+CanvasObject &SelectionBox::GetObject() const
+{
+    // TODO: insert return statement here
+    return m_object;
 }
 
 void SelectionBox::Draw(wxGraphicsContext &gc) const

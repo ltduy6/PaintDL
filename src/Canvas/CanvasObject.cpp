@@ -5,7 +5,6 @@ CanvasObject::CanvasObject(const Shape &shape, Transformation transformation)
 {
 }
 
-
 void CanvasObject::Draw(wxGraphicsContext &gc) const
 {
     gc.PushState();
@@ -31,6 +30,12 @@ Shape CanvasObject::GetShape() const
     return m_shape;
 }
 
+bool CanvasObject::operator==(const CanvasObject &other) const
+{
+    // return m_shape == other.m_shape && m_transformation == other.m_transformation && m_boundingBox == other.m_boundingBox;
+    return true;
+}
+
 void CanvasObject::UpdateScaleFactor(double scaleX, double scaleY)
 {
     m_transformation.scaleX *= scaleX;
@@ -46,4 +51,21 @@ void CanvasObject::UpdateTranslation(double translationX, double translationY)
 {
     m_transformation.translationX += translationX;
     m_transformation.translationY += translationY;
+}
+
+void CanvasObject::SetScaleFactor(double scaleX, double scaleY)
+{
+    m_transformation.scaleX = scaleX;
+    m_transformation.scaleY = scaleY;
+}
+
+void CanvasObject::SetRotationAngle(double angle)
+{
+    m_transformation.rotationAngle = angle;
+}
+
+void CanvasObject::SetTranslation(double translationX, double translationY)
+{
+    m_transformation.translationX = translationX;
+    m_transformation.translationY = translationY;
 }

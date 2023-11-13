@@ -2,6 +2,7 @@
 #include <wx/dcbuffer.h>
 #include "DrawingCanvas.h"
 #include "../Command/AddCommand.h"
+#include "../Command/SelectionCommand.h"
 #include "../MyApp.h"
 #include <iostream>
 
@@ -32,8 +33,10 @@ void DrawingCanvas::BuildContextMenu()
 
 void DrawingCanvas::ShowExportDialog()
 {
+    std::cout << "ViewSHowExportDialog\n";
     if (view)
     {
+        std::cout << "ShowExportDialog\n";
         wxFileDialog exportFileDialog(this, _("Export drawing"), "", "",
                                       "Bitmap Files (*.bmp)|*.bmp|PNG Files (*.png)|*.png|JPEG Files (*.jpg)|*.jpg|All Files (*.*)|*.*", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
@@ -55,6 +58,12 @@ void DrawingCanvas::ShowExportDialog()
     }
 }
 
+void DrawingCanvas::ReFreshCanvas()
+{
+    view->Refresh();
+    Refresh();
+}
+
 DrawingView *DrawingCanvas::GetView() const
 {
     return view;
@@ -65,7 +74,6 @@ void DrawingCanvas::OnMouseDown(wxMouseEvent &event)
     view->OnMouseDown(event.GetPosition());
     isDragging = true;
     Refresh();
-    std::cout << "mouse down" << std::endl;
 }
 
 void DrawingCanvas::OnMouseMove(wxMouseEvent &event)
@@ -86,6 +94,11 @@ void DrawingCanvas::OnMouseUp(wxMouseEvent &event)
         if (MyApp::GetStrokeSettings().currentTool != ToolType::Transform)
         {
             view->GetDocument()->GetCommandProcessor()->Submit(new AddCommand(this));
+        }
+        else if (view->GetIsModified())
+        {
+            std::cout << "Yes\n";
+            view->GetDocument()->GetCommandProcessor()->Submit(new SelectionCommand(this));
         }
     }
 }

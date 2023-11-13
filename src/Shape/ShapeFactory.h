@@ -11,17 +11,17 @@ struct ShapeFactory
         wxPoint2DDouble origin2D{origin};
         switch (settings.currentShape)
         {
-        case ToolType::Path:
+        case ShapeType::Path:
             return Path{settings.color, settings.width, {origin2D}};
-        case ToolType::Rect:
+        case ShapeType::Rect:
             return Rect{{origin2D.m_x, origin2D.m_y, 0, 0}, settings.color, settings.width};
-        case ToolType::Circle:
+        case ShapeType::Circle:
             return Circle{{origin2D.m_x, origin2D.m_y, 0, 0}, settings.color, settings.width};
-        case ToolType::ITriangle:
+        case ShapeType::ITriangle:
             return ITriangle{{origin2D.m_x, origin2D.m_y, 0, 0}, origin2D, origin2D, settings.color, settings.width};
-        case ToolType::RTriangle:
+        case ShapeType::RTriangle:
             return RTriangle{{origin2D.m_x, origin2D.m_y, 0, 0}, origin2D, origin2D, settings.color, settings.width};
-        case ToolType::Diamond:
+        case ShapeType::Diamond:
             return Diamond{{origin2D.m_x, origin2D.m_y, 0, 0}, settings.color, settings.width};
         default:
             throw std::runtime_error("Unknown shape type");

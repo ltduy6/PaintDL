@@ -17,9 +17,15 @@ public:
     wxRect2DDouble GetBoundingBox() const;
     Shape GetShape() const;
 
+    bool operator==(const CanvasObject &other) const;
+
     void UpdateScaleFactor(double scaleX, double scaleY);
     void UpdateRotationAngle(double angle);
     void UpdateTranslation(double translationX, double translationY);
+
+    void SetScaleFactor(double scaleX, double scaleY);
+    void SetRotationAngle(double angle);
+    void SetTranslation(double translationX, double translationY);
 
 private:
     const Shape m_shape;

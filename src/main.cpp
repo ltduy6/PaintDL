@@ -51,6 +51,7 @@ private:
     wxSizer *penWidthSizer;
 
     wxMenu *editMenu{nullptr};
+    DrawingCanvas *m_canvas{nullptr};
 
     int idExport{};
 
@@ -107,12 +108,13 @@ void MyFrame::SetupCanvasForView(DrawingView *view)
         auto canvas = new DrawingCanvas(docPanel, view, wxID_ANY, wxDefaultPosition, wxDefaultSize);
         docPanel->GetSizer()->Add(canvas, 1, wxEXPAND);
 
-        this->Bind(
-            wxEVT_MENU, [canvas](wxCommandEvent &)
-            { canvas->ShowExportDialog(); },
-            idExport);
-
         imageMenu.CallRotate(canvas);
+        shapeMenu.AddCallBack([canvas]()
+                              { canvas->ReFreshCanvas(); });
+        toolMenu.AddCallBack([canvas]()
+                             { canvas->ReFreshCanvas(); });
+        m_canvas = canvas;
+
         view->GetDocument()->GetCommandProcessor()->SetEditMenu(editMenu);
         view->GetDocument()->GetCommandProcessor()->Initialize();
 
@@ -142,14 +144,14 @@ wxScrolled<wxPanel> *MyFrame::BuildControlsPanel(wxWindow *parent)
     auto controlsPanel = new wxScrolled<wxPanel>(parent, wxID_ANY);
     controlsPanel->SetScrollRate(0, FromDIP(10));
 
-    bool isDark = wxSystemSettings::GetAppearance().IsDark();
-    controlsPanel->SetBackgroundColour(wxColour(isDark ? darkBackground : lightBackground));
+    controlsPanel->SetBackgroundColour(wxColour(44, 51, 51));
 
     auto mainSizer = new wxBoxSizer(wxVERTICAL);
 
     auto addGroup = [this, controlsPanel, mainSizer](const wxString &title)
     {
         auto text = new wxStaticText(controlsPanel, wxID_ANY, title);
+        text->SetForegroundColour(wxColour(231, 246, 242));
         mainSizer->Add(text, 0, wxALL, FromDIP(5));
 
         auto wrapSizer = new wxWrapSizer(wxHORIZONTAL);
@@ -217,6 +219,7 @@ MyFrame::MyFrame(wxDocManager *manager, wxFrame *frame, wxWindowID id, const wxS
 
 void MyFrame::BuildMenuBar()
 {
+    constexpr int ExportId = 10001;
     auto menuBar = new wxMenuBar;
 
     auto fileMenu = new wxMenu;
@@ -224,22 +227,21 @@ void MyFrame::BuildMenuBar()
     fileMenu->Append(wxID_OPEN);
     fileMenu->Append(wxID_SAVE);
     fileMenu->Append(wxID_SAVEAS);
-    idExport = fileMenu->Append(wxID_ANY, "&Export...")->GetId();
-
     fileMenu->Append(wxID_EXIT);
-
+    fileMenu->Append(ExportId, "&Export...");
+    fileMenu->Bind(
+        wxEVT_MENU, [&](wxCommandEvent &)
+        {
+        if (m_canvas)
+        {
+            m_canvas->ShowExportDialog();
+        } },
+        ExportId);
     menuBar->Append(fileMenu, "&File");
 
     editMenu = new wxMenu;
     editMenu->Append(wxID_UNDO);
     editMenu->Append(wxID_REDO);
-    editMenu->AppendSeparator();
-    editMenu->Append(wxID_CUT);
-    editMenu->Append(wxID_COPY);
-    editMenu->Append(wxID_PASTE);
-    editMenu->Append(wxID_DELETE);
-    editMenu->AppendSeparator();
-    editMenu->Append(wxID_SELECTALL);
 
     menuBar->Append(editMenu, "&Edit");
 

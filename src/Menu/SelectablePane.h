@@ -18,6 +18,7 @@ public:
         return FromDIP(wxSize(35, 35));
     }
 
+    void AddCallback(std::function<void()> callback);
     bool selected = false;
 
 protected:
@@ -27,7 +28,9 @@ private:
     void OnPaint(wxPaintEvent &event);
     void OnMouseEnter(wxMouseEvent &event);
     void OnMouseLeave(wxMouseEvent &event);
+    void OnMouseClick(wxMouseEvent &event);
 
 private:
     bool isHover{false};
+    std::vector<std::function<void()>> callbacks;
 };

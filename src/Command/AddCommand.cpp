@@ -16,17 +16,15 @@ AddCommand::~AddCommand()
 
 bool AddCommand::Do()
 {
-    if (MyApp::GetStrokeSettings().currentTool != ToolType::Transform)
-    {
-        m_canvas->GetView()->GetDocument()->objects.push_back(*m_object);
-        m_canvas->Refresh();
-    }
+    m_canvas->GetView()->GetDocument()->objects.push_back(*m_object);
+    m_canvas->GetView()->GetDocument()->Modify(true);
+    m_canvas->Refresh();
     return true;
 }
 
 bool AddCommand::Undo()
 {
     m_canvas->GetView()->GetDocument()->objects.pop_back();
-    m_canvas->Refresh();
+    m_canvas->ReFreshCanvas();
     return true;
 }

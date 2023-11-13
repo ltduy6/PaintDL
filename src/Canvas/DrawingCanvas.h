@@ -19,6 +19,7 @@ public:
     void SetMenu(wxMenu *menu);
     void BuildContextMenu();
     void ShowExportDialog();
+    void ReFreshCanvas();
     DrawingView *GetView() const;
 
 private:

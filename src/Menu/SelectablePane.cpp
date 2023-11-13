@@ -8,6 +8,12 @@ SelectablePane::SelectablePane(wxWindow *parent, wxWindowID id, const wxPoint &p
     Bind(wxEVT_PAINT, &SelectablePane::OnPaint, this);
     Bind(wxEVT_ENTER_WINDOW, &SelectablePane::OnMouseEnter, this);
     Bind(wxEVT_LEAVE_WINDOW, &SelectablePane::OnMouseLeave, this);
+    Bind(wxEVT_LEFT_UP, &SelectablePane::OnMouseClick, this);
+}
+
+void SelectablePane::AddCallback(std::function<void()> callback)
+{
+    callbacks.push_back(callback);
 }
 
 void SelectablePane::OnPaint(wxPaintEvent &event)
@@ -27,15 +33,22 @@ void SelectablePane::OnPaint(wxPaintEvent &event)
 
         const auto roundness = FromDIP(4);
 
-        DrawContent(gc, contentRect, roundness);
-
-        if (isHover || selected)
+        if (selected)
         {
-            gc->SetPen(wxSystemSettings::GetAppearance().IsDark() ? *wxWHITE_PEN : *wxBLACK_PEN);
+            gc->SetPen(wxPen(wxColour(231, 246, 242), FromDIP(1)));
             gc->SetBrush(*wxTRANSPARENT_BRUSH);
 
             gc->DrawRoundedRectangle(selectionRect.GetX(), selectionRect.GetY(), selectionRect.GetWidth(), selectionRect.GetHeight(), roundness);
         }
+
+        if (isHover)
+        {
+            gc->SetBrush(wxColor(89, 101, 101));
+
+            gc->DrawRoundedRectangle(selectionRect.GetX(), selectionRect.GetY(), selectionRect.GetWidth(), selectionRect.GetHeight(), roundness);
+        }
+
+        DrawContent(gc, contentRect, roundness);
 
         delete gc;
     }
@@ -51,4 +64,12 @@ void SelectablePane::OnMouseLeave(wxMouseEvent &event)
 {
     isHover = false;
     Refresh();
+}
+
+void SelectablePane::OnMouseClick(wxMouseEvent &event)
+{
+    for (auto &callback : callbacks)
+    {
+        callback();
+    }
 }
