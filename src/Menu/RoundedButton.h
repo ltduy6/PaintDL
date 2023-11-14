@@ -9,12 +9,7 @@
 class RoundedButton : public wxButton
 {
 public:
-    RoundedButton(wxWindow *parent, wxWindowID id, std::string fileName, const wxSize &size = wxDefaultSize, const wxPoint &pos = wxDefaultPosition, long style = wxBU_AUTODRAW);
-
-    wxSize DoGetBestSize() const override
-    {
-        return FromDIP(wxSize(35, 35));
-    }
+    RoundedButton(wxWindow *parent, wxWindowID id, wxString name, const wxSize &size = wxDefaultSize, const wxPoint &pos = wxDefaultPosition, long style = wxBU_AUTODRAW);
 
     void SetFinished(bool isFinished);
     void AddCallback(std::function<void()> callback);
@@ -27,7 +22,7 @@ private:
     void OnMoveDown(wxMouseEvent &event);
 
 private:
-    std::string path{"src/Assets/"};
+    wxString m_name{};
     std::vector<std::function<void()>> callbacks;
     bool isHovered{false};
     bool isHold{false};

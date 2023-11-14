@@ -1,6 +1,6 @@
 #include "SelectionCommand.h"
 
-SelectionCommand::SelectionCommand(DrawingCanvas *canvas) : m_canvas(canvas), m_object(nullptr), wxCommand(true, "Selection")
+SelectionCommand::SelectionCommand(DrawingCanvas *canvas) : m_canvas(canvas), m_object(nullptr), wxCommand(true, "Selection Tool")
 {
 }
 

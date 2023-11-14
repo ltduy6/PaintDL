@@ -16,6 +16,7 @@
 #include "Menu/ShapeMenu.h"
 #include "Menu/ToolMenu.h"
 #include "Menu/ImageMenu.h"
+#include "Menu/HistoryPanel.h"
 
 #include "Canvas/DrawingCanvas.h"
 #include "DrawingDocument.h"
@@ -43,9 +44,10 @@ private:
     ShapeMenu shapeMenu{};
     ToolMenu toolMenu{};
     ImageMenu imageMenu{};
+    HistoryPanel historyPanel{};
 
     wxPanel *docPanel;
-    wxScrolled<wxPanel> *controlsPanel;
+    wxScrolled<wxPanel> *m_controlsPanel;
 
     wxStaticText *textSize;
     wxSizer *penWidthSizer;
@@ -101,18 +103,21 @@ void MyFrame::SetupCanvasForView(DrawingView *view)
     if (docPanel->GetChildren().size() > 0)
     {
         docPanel->GetSizer()->Clear(true);
+        historyPanel.ClearHistory();
     }
 
     if (view != nullptr)
     {
-        auto canvas = new DrawingCanvas(docPanel, view, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+        auto canvas = new DrawingCanvas(docPanel, view, wxID_ANY, historyPanel, wxPoint(0, 0), wxSize(1200, 1200));
         docPanel->GetSizer()->Add(canvas, 1, wxEXPAND);
+        canvas->CenterOnParent();
 
         imageMenu.CallRotate(canvas);
         shapeMenu.AddCallBack([canvas]()
                               { canvas->ReFreshCanvas(); });
         toolMenu.AddCallBack([canvas]()
                              { canvas->ReFreshCanvas(); });
+
         m_canvas = canvas;
 
         view->GetDocument()->GetCommandProcessor()->SetEditMenu(editMenu);
@@ -191,7 +196,11 @@ wxScrolled<wxPanel> *MyFrame::BuildControlsPanel(wxWindow *parent)
     addGroup("Size");
     addGroup("Shapes");
 
+    historyPanel.SetUp(controlsPanel, mainSizer, this);
+
     controlsPanel->SetSizer(mainSizer);
+    controlsPanel->Layout();
+    mainSizer->Fit(controlsPanel);
 
     return controlsPanel;
 }
@@ -204,11 +213,12 @@ MyFrame::MyFrame(wxDocManager *manager, wxFrame *frame, wxWindowID id, const wxS
 
     splitter->SetMinimumPaneSize(FromDIP(150));
 
-    controlsPanel = BuildControlsPanel(splitter);
-    docPanel = new wxPanel(splitter, wxID_ANY);
+    m_controlsPanel = BuildControlsPanel(splitter);
+    docPanel = new wxScrolled<wxPanel>(splitter, wxID_ANY);
     docPanel->SetSizer(new wxBoxSizer(wxVERTICAL));
+    docPanel->SetBackgroundColour(wxColour(231, 246, 242));
 
-    splitter->SplitVertically(controlsPanel, docPanel);
+    splitter->SplitVertically(m_controlsPanel, docPanel);
     splitter->SetSashPosition(FromDIP(100));
 
     this->SetSize(FromDIP(800), FromDIP(500));
@@ -220,6 +230,7 @@ MyFrame::MyFrame(wxDocManager *manager, wxFrame *frame, wxWindowID id, const wxS
 void MyFrame::BuildMenuBar()
 {
     constexpr int ExportId = 10001;
+    constexpr int HistoryId = 10002;
     auto menuBar = new wxMenuBar;
 
     auto fileMenu = new wxMenu;

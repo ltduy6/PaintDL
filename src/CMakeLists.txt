@@ -37,9 +37,12 @@ Menu/SizeMenu.cpp
 Menu/ShapeMenu.cpp
 Menu/ToolMenu.cpp
 Menu/ImageMenu.cpp
+Menu/HistoryPanel.cpp
+Menu/HistoryPane.cpp
 # Command folder
 Command/AddCommand.cpp
-Command/SelectionCommand.cpp)
+Command/SelectionCommand.cpp
+Command/ShapeCommand.cpp)
 
 include(${wxWidgets_USE_FILE})
 

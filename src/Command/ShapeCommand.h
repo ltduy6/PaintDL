@@ -4,11 +4,11 @@
 #include "../Canvas/ShapeCreator.h"
 #include "../Canvas/DrawingCanvas.h"
 
-class AddCommand : public wxCommand
+class ShapeCommand : public wxCommand
 {
 public:
-    AddCommand(DrawingCanvas *canvas, wxString name);
-    ~AddCommand();
+    ShapeCommand(DrawingCanvas *canvas, wxString name);
+    ~ShapeCommand();
 
     virtual bool Do() override;
     virtual bool Undo() override;

@@ -9,7 +9,7 @@ void ShapeMenu::SetUpShapeMenu(wxWindow *parent, wxSizer *sizer, std::function<v
         shapePane->AddCallback([this, i, reset]()
                                { 
                             MyApp::GetStrokeSettings().currentShape = i;
-                            MyApp::GetStrokeSettings().currentTool = ToolType::None;
+                            MyApp::GetStrokeSettings().currentTool = ToolType::Shape;
                             reset(); });
 
         shapePanes.push_back(shapePane);

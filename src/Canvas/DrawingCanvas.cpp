@@ -3,11 +3,12 @@
 #include "DrawingCanvas.h"
 #include "../Command/AddCommand.h"
 #include "../Command/SelectionCommand.h"
+#include "../Command/ShapeCommand.h"
 #include "../MyApp.h"
 #include <iostream>
 
-DrawingCanvas::DrawingCanvas(wxWindow *parent, DrawingView *view, wxWindowID id, const wxPoint &pos, const wxSize &size)
-    : wxWindow(parent, id, pos, size), view(view)
+DrawingCanvas::DrawingCanvas(wxWindow *parent, DrawingView *view, wxWindowID id, HistoryPanel &historyPanel, const wxPoint &pos, const wxSize &size)
+    : wxWindow(parent, id, pos, size), view(view), m_historyPanel(historyPanel)
 {
     this->SetBackgroundStyle(wxBG_STYLE_PAINT);
 
@@ -16,19 +17,6 @@ DrawingCanvas::DrawingCanvas(wxWindow *parent, DrawingView *view, wxWindowID id,
     this->Bind(wxEVT_MOTION, &DrawingCanvas::OnMouseMove, this);
     this->Bind(wxEVT_LEFT_UP, &DrawingCanvas::OnMouseUp, this);
     this->Bind(wxEVT_LEAVE_WINDOW, &DrawingCanvas::OnMouseLeave, this);
-}
-
-void DrawingCanvas::BuildContextMenu()
-{
-    auto save = contextMenu->Append(wxID_ANY, "&Export...");
-
-    this->Bind(
-        wxEVT_MENU,
-        [&](wxCommandEvent &)
-        {
-            this->ShowExportDialog();
-        },
-        save->GetId());
 }
 
 void DrawingCanvas::ShowExportDialog()
@@ -93,22 +81,75 @@ void DrawingCanvas::OnMouseUp(wxMouseEvent &event)
         view->OnMouseDragEnd();
         if (MyApp::GetStrokeSettings().currentTool != ToolType::Transform)
         {
-            view->GetDocument()->GetCommandProcessor()->Submit(new AddCommand(this));
+            auto command = new AddCommand(this, getShapeCommandName());
+            view->GetDocument()->GetCommandProcessor()->Submit(command);
+            UpdateHistoryPanel();
         }
         else if (view->GetIsModified())
         {
-            std::cout << "Yes\n";
-            view->GetDocument()->GetCommandProcessor()->Submit(new SelectionCommand(this));
+            auto command = new SelectionCommand(this);
+            view->GetDocument()->GetCommandProcessor()->Submit(command);
+            UpdateHistoryPanel();
         }
     }
 }
 
 void DrawingCanvas::OnMouseLeave(wxMouseEvent &event)
 {
-    if (isDragging)
+    OnMouseUp(event);
+}
+
+void DrawingCanvas::OnScroll(wxScrollEvent &event)
+{
+    std::cout << "Yes\n";
+    Refresh();
+}
+
+void DrawingCanvas::HandleEvent(wxMouseEvent &event)
+{
+    std::cout << "Yes\n";
+    if (event.GetEventType() == wxEVT_LEFT_DOWN)
     {
-        isDragging = false;
-        view->OnMouseDragEnd();
+        std::cout << "Mouse Down\n";
+        OnMouseDown(event);
+    }
+    else if (event.GetEventType() == wxEVT_MOTION)
+    {
+        OnMouseMove(event);
+    }
+    else if (event.GetEventType() == wxEVT_LEFT_UP)
+    {
+        OnMouseUp(event);
+    }
+    else if (event.GetEventType() == wxEVT_LEAVE_WINDOW)
+    {
+        OnMouseLeave(event);
+    }
+}
+void DrawingCanvas::UpdateHistoryPanel()
+{
+    wxString name = view->GetDocument()->GetCommandProcessor()->GetCurrentCommand()->GetName();
+    m_historyPanel.get().AddHistoryItem(name, []() {});
+}
+
+wxString DrawingCanvas::getShapeCommandName()
+{
+    if (MyApp::GetStrokeSettings().currentTool == ToolType::Brush)
+        return "Brush Tool";
+    switch (MyApp::GetStrokeSettings().currentShape)
+    {
+    case ShapeType::Rect:
+        return "Rectangle";
+    case ShapeType::Circle:
+        return "Circle";
+    case ShapeType::Diamond:
+        return "Diamond";
+    case ShapeType::ITriangle:
+        return "ITriangle";
+    case ShapeType::RTriangle:
+        return "RTriangle";
+    default:
+        return "Shape";
     }
 }
 
@@ -126,9 +167,4 @@ void DrawingCanvas::SetView(DrawingView *view)
 {
     this->view = view;
     Refresh();
-}
-
-void DrawingCanvas::SetMenu(wxMenu *menu)
-{
-    this->contextMenu = menu;
 }

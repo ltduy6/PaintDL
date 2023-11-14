@@ -1,7 +1,7 @@
 #include "RoundedButton.h"
 
-RoundedButton::RoundedButton(wxWindow *parent, wxWindowID id, std::string fileName, const wxSize &size, const wxPoint &pos, long style)
-    : wxButton(parent, id, wxEmptyString, pos, size, style)
+RoundedButton::RoundedButton(wxWindow *parent, wxWindowID id, wxString name, const wxSize &size, const wxPoint &pos, long style)
+    : wxButton(parent, id, name, pos, size, style), m_name(name)
 {
     this->SetBackgroundStyle(wxBG_STYLE_PAINT);
     Bind(wxEVT_PAINT, &RoundedButton::OnPaint, this);
@@ -9,8 +9,6 @@ RoundedButton::RoundedButton(wxWindow *parent, wxWindowID id, std::string fileNa
     Bind(wxEVT_LEAVE_WINDOW, &RoundedButton::OnLeave, this);
     Bind(wxEVT_LEFT_DOWN, &RoundedButton::OnMoveDown, this);
     Bind(wxEVT_LEFT_UP, &RoundedButton::OnMoveUp, this);
-
-    path += fileName;
 }
 
 void RoundedButton::SetFinished(bool isFinished)
@@ -32,34 +30,20 @@ void RoundedButton::OnPaint(wxPaintEvent &event)
     auto gc = wxGraphicsContext::Create(dc);
     if (gc)
     {
-        wxRect selectionRect{0, 0, this->GetSize().GetWidth(), this->GetSize().GetHeight()};
-        selectionRect.Deflate(FromDIP(2));
+        wxRect rc{0, 0, this->GetSize().GetWidth(), this->GetSize().GetHeight()};
+        wxColour bkColor(wxColour(90, 90, 90));
+        wxColour textColor(wxColour(231, 246, 242));
+        wxFont font(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_LIGHT);
 
-        const auto roundness = FromDIP(4);
-        wxBrush brush;
+        gc->SetBrush(wxBrush(bkColor));
+        gc->SetPen(wxPen(bkColor, 1, wxPENSTYLE_SOLID));
+        gc->DrawRectangle(rc.x, rc.y, rc.width, rc.height);
 
-        bool isDark = wxSystemSettings::GetAppearance().IsDark();
-        gc->SetPen(*wxTRANSPARENT_PEN);
-        if (isHold && isHovered)
-        {
-            brush = *wxGREY_BRUSH;
-        }
-        else if (isHovered)
-        {
-            brush = *wxLIGHT_GREY_BRUSH;
-        }
-        else
-        {
-            brush = *wxTRANSPARENT_BRUSH;
-        }
-        gc->SetBrush(brush);
-        gc->DrawRoundedRectangle(selectionRect.GetX(), selectionRect.GetY(), selectionRect.GetWidth(), selectionRect.GetHeight(), roundness);
-
-        wxBitmap bitmap(path, wxBITMAP_TYPE_PNG);
-        if (bitmap.IsOk())
-        {
-            gc->DrawBitmap(bitmap, selectionRect.GetX(), selectionRect.GetY(), selectionRect.GetWidth(), selectionRect.GetHeight());
-        }
+        gc->SetFont(font, textColor);
+        wxDouble *width = new wxDouble;
+        wxDouble *height = new wxDouble;
+        gc->GetTextExtent(m_name, width, height);
+        gc->DrawText(_(m_name), rc.x + 5, rc.y + (rc.height - *height) / 2);
         delete gc;
     }
 }

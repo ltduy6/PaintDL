@@ -81,7 +81,7 @@ void DrawingView::OnMouseDown(wxPoint pt)
         {
             auto iterator = std::find_if(GetDocument()->objects.rbegin(), GetDocument()->objects.rend(), [&](auto &obj)
                                          { return obj.get().GetBoundingBox().Contains(ObjectSpace::ToObjectCoordinates(obj, pt)); });
-            std::cout << GetDocument()->objects.size() + 1 << std::endl;
+
             selectionBox = (iterator != GetDocument()->objects.rend()) ? std::make_optional(SelectionBox{*iterator, MyApp::GetStrokeSettings().selectionHandleWidth}) : std::nullopt;
 
             if (selectionBox.has_value())

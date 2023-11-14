@@ -1,12 +1,11 @@
-#include "AddCommand.h"
-#include "../MyApp.h"
+#include "ShapeCommand.h"
 
-AddCommand::AddCommand(DrawingCanvas *canvas, wxString name) : wxCommand(true, name), m_canvas(canvas)
+ShapeCommand::ShapeCommand(DrawingCanvas *canvas, wxString name) : wxCommand(true, name), m_canvas(canvas)
 {
     m_object = new CanvasObject(m_canvas->GetView()->GetCanvasObject());
 }
 
-AddCommand::~AddCommand()
+ShapeCommand::~ShapeCommand()
 {
     if (m_object)
     {
@@ -14,7 +13,7 @@ AddCommand::~AddCommand()
     }
 }
 
-bool AddCommand::Do()
+bool ShapeCommand::Do()
 {
     m_canvas->GetView()->GetDocument()->objects.push_back(*m_object);
     m_canvas->GetView()->GetDocument()->Modify(true);
@@ -22,7 +21,7 @@ bool AddCommand::Do()
     return true;
 }
 
-bool AddCommand::Undo()
+bool ShapeCommand::Undo()
 {
     m_canvas->GetView()->GetDocument()->objects.pop_back();
     m_canvas->ReFreshCanvas();

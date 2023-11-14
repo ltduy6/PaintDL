@@ -4,6 +4,7 @@
 enum class ToolType
 {
     Brush,
+    Shape,
     Transform,
     Rotate,
     CustomColor,
