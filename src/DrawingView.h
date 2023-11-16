@@ -23,6 +23,7 @@ public:
 
     void PredefinedRotate(double angle);
     void Refresh();
+    void ResetModified();
 
     bool GetIsModified() const;
 

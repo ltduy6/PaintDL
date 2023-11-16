@@ -7,7 +7,7 @@
 #include "../MyApp.h"
 #include <iostream>
 
-DrawingCanvas::DrawingCanvas(wxWindow *parent, DrawingView *view, wxWindowID id, HistoryPanel &historyPanel, const wxPoint &pos, const wxSize &size)
+DrawingCanvas::DrawingCanvas(wxWindow *parent, DrawingView *view, HistoryPanel &historyPanel, wxWindowID id, const wxPoint &pos, const wxSize &size)
     : wxWindow(parent, id, pos, size), view(view), m_historyPanel(historyPanel)
 {
     this->SetBackgroundStyle(wxBG_STYLE_PAINT);
@@ -81,15 +81,18 @@ void DrawingCanvas::OnMouseUp(wxMouseEvent &event)
         view->OnMouseDragEnd();
         if (MyApp::GetStrokeSettings().currentTool != ToolType::Transform)
         {
-            auto command = new AddCommand(this, getShapeCommandName());
+            HistoryPane *historyPane = m_historyPanel.get().createHistoryPane(getShapeCommandName());
+            auto command = new AddCommand(this, getShapeCommandName(), historyPane);
             view->GetDocument()->GetCommandProcessor()->Submit(command);
-            UpdateHistoryPanel();
+            m_historyPanel.get().AddHistoryItem(view->GetDocument()->GetCommandProcessor(), historyPane);
         }
         else if (view->GetIsModified())
         {
-            auto command = new SelectionCommand(this);
+            HistoryPane *historyPane = m_historyPanel.get().createHistoryPane("Transform");
+            auto command = new SelectionCommand(this, historyPane);
             view->GetDocument()->GetCommandProcessor()->Submit(command);
-            UpdateHistoryPanel();
+            m_historyPanel.get().AddHistoryItem(view->GetDocument()->GetCommandProcessor(), historyPane);
+            view->ResetModified();
         }
     }
 }
@@ -128,8 +131,6 @@ void DrawingCanvas::HandleEvent(wxMouseEvent &event)
 }
 void DrawingCanvas::UpdateHistoryPanel()
 {
-    wxString name = view->GetDocument()->GetCommandProcessor()->GetCurrentCommand()->GetName();
-    m_historyPanel.get().AddHistoryItem(name, []() {});
 }
 
 wxString DrawingCanvas::getShapeCommandName()

@@ -88,6 +88,9 @@ void SelectionBox::StartDragging(wxPoint2DDouble point)
         m_draggableElement = {};
     }
 
+    if (m_draggableElement.has_value())
+        m_oldTransformation = m_object.get().GetTransformation();
+
     m_lastDragPoint = point;
 }
 

@@ -6,6 +6,7 @@
 #include <wx/scrolwin.h>
 
 #include "../DrawingView.h"
+#include "../Menu/HistoryPane.h"
 #include "../Menu/HistoryPanel.h"
 
 class DrawingCanvas : public wxWindow
@@ -14,7 +15,7 @@ public:
     typedef std::unique_ptr<DrawingCanvas> Ptr;
 
 public:
-    DrawingCanvas(wxWindow *parent, DrawingView *view, wxWindowID id, HistoryPanel &historyPanel, const wxPoint &pos, const wxSize &size);
+    DrawingCanvas(wxWindow *parent, DrawingView *view, HistoryPanel &historyPanel, wxWindowID id, const wxPoint &pos, const wxSize &size);
     virtual ~DrawingCanvas() noexcept {}
 
     void SetView(DrawingView *view);
@@ -39,7 +40,6 @@ private:
 private:
     DrawingView *view;
     std::reference_wrapper<HistoryPanel> m_historyPanel;
-    std::vector<wxCommand *> m_commands;
 
     bool isDragging{false};
 };

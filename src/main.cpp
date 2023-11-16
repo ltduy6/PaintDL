@@ -44,10 +44,11 @@ private:
     ShapeMenu shapeMenu{};
     ToolMenu toolMenu{};
     ImageMenu imageMenu{};
-    HistoryPanel historyPanel{};
+    HistoryPanel historyPanelHolder{};
 
     wxPanel *docPanel;
     wxScrolled<wxPanel> *m_controlsPanel;
+    wxScrolled<wxPanel> *m_historyPanel;
 
     wxStaticText *textSize;
     wxSizer *penWidthSizer;
@@ -103,12 +104,11 @@ void MyFrame::SetupCanvasForView(DrawingView *view)
     if (docPanel->GetChildren().size() > 0)
     {
         docPanel->GetSizer()->Clear(true);
-        historyPanel.ClearHistory();
     }
 
     if (view != nullptr)
     {
-        auto canvas = new DrawingCanvas(docPanel, view, wxID_ANY, historyPanel, wxPoint(0, 0), wxSize(1200, 1200));
+        auto canvas = new DrawingCanvas(docPanel, view, historyPanelHolder, wxID_ANY, wxPoint(0, 0), wxSize(1200, 1200));
         docPanel->GetSizer()->Add(canvas, 1, wxEXPAND);
         canvas->CenterOnParent();
 
@@ -122,17 +122,6 @@ void MyFrame::SetupCanvasForView(DrawingView *view)
 
         view->GetDocument()->GetCommandProcessor()->SetEditMenu(editMenu);
         view->GetDocument()->GetCommandProcessor()->Initialize();
-
-        this->Bind(wxEVT_MENU, [&](wxCommandEvent &event)
-                   {
-            if(event.GetId() == wxID_UNDO)
-            {
-                view->GetDocument()->GetCommandProcessor()->Undo();
-            }
-            else if(event.GetId() == wxID_REDO)
-            {
-                view->GetDocument()->GetCommandProcessor()->Redo();
-            } });
 
         view->SetFrame(this);
     }
@@ -195,8 +184,7 @@ wxScrolled<wxPanel> *MyFrame::BuildControlsPanel(wxWindow *parent)
     addGroup("Image");
     addGroup("Size");
     addGroup("Shapes");
-
-    historyPanel.SetUp(controlsPanel, mainSizer, this);
+    historyPanelHolder.SetUp(controlsPanel, mainSizer);
 
     controlsPanel->SetSizer(mainSizer);
     controlsPanel->Layout();

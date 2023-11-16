@@ -1,14 +1,17 @@
 #include "RoundedButton.h"
 
 RoundedButton::RoundedButton(wxWindow *parent, wxWindowID id, wxString name, const wxSize &size, const wxPoint &pos, long style)
-    : wxButton(parent, id, name, pos, size, style), m_name(name)
+    : wxWindow(parent, id, pos, size, style), m_name(name)
 {
+    std::cout << "Copied\n";
     this->SetBackgroundStyle(wxBG_STYLE_PAINT);
     Bind(wxEVT_PAINT, &RoundedButton::OnPaint, this);
-    Bind(wxEVT_ENTER_WINDOW, &RoundedButton::OnHover, this);
-    Bind(wxEVT_LEAVE_WINDOW, &RoundedButton::OnLeave, this);
-    Bind(wxEVT_LEFT_DOWN, &RoundedButton::OnMoveDown, this);
-    Bind(wxEVT_LEFT_UP, &RoundedButton::OnMoveUp, this);
+    Bind(wxEVT_LEFT_DOWN, &RoundedButton::Onclick, this);
+}
+
+RoundedButton::~RoundedButton()
+{
+    m_name.clear();
 }
 
 void RoundedButton::SetFinished(bool isFinished)
@@ -19,6 +22,11 @@ void RoundedButton::SetFinished(bool isFinished)
 void RoundedButton::AddCallback(std::function<void()> callback)
 {
     callbacks.push_back(callback);
+}
+
+void RoundedButton::SetHovered(bool isHovered)
+{
+    this->isHovered = isHovered;
 }
 
 void RoundedButton::OnPaint(wxPaintEvent &event)
@@ -35,6 +43,13 @@ void RoundedButton::OnPaint(wxPaintEvent &event)
         wxColour textColor(wxColour(231, 246, 242));
         wxFont font(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_LIGHT);
 
+        if (!isHovered)
+        {
+            bkColor = wxColour(100, 100, 100);
+            textColor = wxColour(90, 90, 90);
+            font = wxFont(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_ITALIC, wxFONTWEIGHT_LIGHT);
+        }
+
         gc->SetBrush(wxBrush(bkColor));
         gc->SetPen(wxPen(bkColor, 1, wxPENSTYLE_SOLID));
         gc->DrawRectangle(rc.x, rc.y, rc.width, rc.height);
@@ -48,31 +63,10 @@ void RoundedButton::OnPaint(wxPaintEvent &event)
     }
 }
 
-void RoundedButton::OnHover(wxMouseEvent &event)
+void RoundedButton::Onclick(wxMouseEvent &event)
 {
-    isHovered = true;
-}
-
-void RoundedButton::OnLeave(wxMouseEvent &event)
-{
-    isHovered = false;
-    isHold = false;
-}
-
-void RoundedButton::OnMoveUp(wxMouseEvent &event)
-{
-    if (isHovered)
+    for (auto callback : callbacks)
     {
-        isHold = false;
-        Refresh();
-        for (const auto &callback : callbacks)
-        {
-            callback();
-        }
+        callback();
     }
-}
-
-void RoundedButton::OnMoveDown(wxMouseEvent &event)
-{
-    isHold = true;
 }

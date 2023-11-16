@@ -1,32 +1,44 @@
 #include "HistoryPane.h"
 
 HistoryPane::HistoryPane(wxWindow *parent, wxString name, wxWindowID id, const wxPoint &pos, const wxSize &size)
-    : wxWindow(parent, id, pos, size), name(name)
+    : SelectablePane(parent, id, pos, size), name(name)
 {
-    this->SetBackgroundStyle(wxBG_STYLE_PAINT);
-
-    Bind(wxEVT_PAINT, &HistoryPane::OnPaint, this);
+    width = new wxDouble;
+    height = new wxDouble;
 }
 
-void HistoryPane::OnPaint(wxPaintEvent &event)
+HistoryPane::~HistoryPane()
 {
-    wxAutoBufferedPaintDC dc(this);
-    dc.SetBackground(wxBrush(this->GetParent()->GetBackgroundColour()));
-    dc.Clear();
+    delete width;
+    delete height;
+    width = nullptr;
+    height = nullptr;
+}
 
-    auto gc = wxGraphicsContext::Create(dc);
-    if (gc)
+void HistoryPane::SetActive(bool isActive)
+{
+    this->isActive = isActive;
+    Refresh();
+}
+
+void HistoryPane::DrawContent(wxGraphicsContext *gc, const wxRect &rect, int roundness) const
+{
+    wxColour bkColor(wxColour(90, 90, 90));
+    wxColour textColor(wxColour(231, 246, 242));
+    wxFont font(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_LIGHT);
+
+    if (!isActive)
     {
-        wxRect contentRect{0, 0, this->GetSize().GetWidth(), this->GetSize().GetHeight()};
-        gc->SetBrush(wxBrush(wxColour(89, 90, 90)));
-        gc->DrawRectangle(contentRect.GetX(), contentRect.GetY(), contentRect.GetWidth(), contentRect.GetHeight());
-
-        gc->SetPen(wxColour(WHITE_PEN));
-        wxFont font(wxFontInfo(FromDIP(5)).Family(wxFONTFAMILY_DEFAULT).FaceName("Segoe UI"));
-        gc->SetFont(font, wxColour(WHITE_PEN));
-        wxDouble *width = new wxDouble;
-        wxDouble *height = new wxDouble;
-        gc->GetTextExtent(name, width, height);
-        gc->DrawText(name, contentRect.GetX() + (contentRect.GetWidth() - *width) / 2, contentRect.GetY() + (contentRect.GetHeight() - *height) / 2);
+        bkColor = wxColour(100, 100, 100);
+        textColor = wxColour(90, 90, 90);
+        font = wxFont(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_ITALIC, wxFONTWEIGHT_LIGHT);
     }
+
+    gc->SetBrush(wxBrush(bkColor));
+    gc->SetPen(wxPen(bkColor, 1, wxPENSTYLE_SOLID));
+    gc->DrawRoundedRectangle(rect.x, rect.y, rect.width, rect.height, roundness);
+
+    gc->SetFont(font, textColor);
+    gc->GetTextExtent(name, width, height);
+    gc->DrawText(_(name), rect.x + 5, rect.y + (rect.height - *height) / 2);
 }

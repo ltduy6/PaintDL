@@ -159,6 +159,11 @@ void DrawingView::Refresh()
     selectionBox = {};
 }
 
+void DrawingView::ResetModified()
+{
+    isModified = false;
+}
+
 bool DrawingView::GetIsModified() const
 {
     return isModified && selectionBox.has_value();

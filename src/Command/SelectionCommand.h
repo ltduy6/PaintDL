@@ -3,11 +3,12 @@
 #include <wx/cmdproc.h>
 #include "../Canvas/DrawingCanvas.h"
 #include "../DrawingDocument.h"
+#include "../Menu/HistoryPane.h"
 
 class SelectionCommand : public wxCommand
 {
 public:
-    SelectionCommand(DrawingCanvas *canvas);
+    SelectionCommand(DrawingCanvas *canvas, HistoryPane *historyPane);
     ~SelectionCommand();
 
     virtual bool Do() override;
@@ -18,5 +19,6 @@ protected:
     Transformation m_oldTransform;
     Transformation m_newTransform;
     CanvasObject *m_object;
+    HistoryPane *m_historyPane{};
     bool firstDo{true};
 };

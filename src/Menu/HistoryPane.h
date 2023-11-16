@@ -9,19 +9,21 @@
 #include <wx/dc.h>
 #include <wx/dcgraph.h>
 
-class HistoryPane : public wxWindow
+#include "SelectablePane.h"
+
+class HistoryPane : public SelectablePane
 {
 public:
     HistoryPane(wxWindow *parent, wxString name, wxWindowID id = wxID_ANY, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize);
-
-    wxSize DoGetBestSize() const override
-    {
-        return FromDIP(wxSize(35, 20));
-    }
+    ~HistoryPane() override;
+    void SetActive(bool isActive);
 
 private:
-    void OnPaint(wxPaintEvent &event);
+    virtual void DrawContent(wxGraphicsContext *gc, const wxRect &rect, int roundness) const override;
 
 private:
     wxString name;
+    wxDouble *width;
+    wxDouble *height;
+    bool isActive{true};
 };

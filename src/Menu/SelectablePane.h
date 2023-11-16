@@ -12,6 +12,7 @@ class SelectablePane : public wxWindow
 {
 public:
     SelectablePane(wxWindow *parent, wxWindowID id = wxID_ANY, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize);
+    virtual ~SelectablePane() = default;
 
     wxSize DoGetBestSize() const override
     {

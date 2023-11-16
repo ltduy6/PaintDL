@@ -8,11 +8,14 @@
 class HistoryPanel
 {
 public:
-    void SetUp(wxWindow *controlsPanel, wxBoxSizer *mainSizer, wxFrame *frame);
-    void AddHistoryItem(wxString name, std::function<void()> callback);
+    void SetUp(wxWindow *parent, wxSizer *sizer);
+    void AddHistoryItem(wxCommandProcessor *historyProcessor, HistoryPane *button);
     void ClearHistory();
+    HistoryPane *createHistoryPane(wxString name);
 
 private:
     wxScrolled<wxPanel> *historyPanel{nullptr};
     wxBoxSizer *historySizer{nullptr};
+    std::vector<HistoryPane *> buttons;
+    size_t currentCommand{0};
 };
