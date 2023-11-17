@@ -44,6 +44,10 @@ namespace ShapeUltils
                            [&boundingBox](const Diamond &diamond)
                            {
                                boundingBox = diamond.rect;
+                           },
+                           [&boundingBox](const Text &text)
+                           {
+                               boundingBox = text.rect;
                            }},
                    shape);
         return boundingBox;

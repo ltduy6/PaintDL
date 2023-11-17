@@ -18,7 +18,7 @@ protected:
     DrawingCanvas *m_canvas{};
     Transformation m_oldTransform;
     Transformation m_newTransform;
-    CanvasObject *m_object;
+    std::reference_wrapper<CanvasObject> m_object;
     HistoryPane *m_historyPane{};
     bool firstDo{true};
 };

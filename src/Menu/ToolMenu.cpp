@@ -11,7 +11,9 @@ void ToolMenu::SetUpToolMenu(wxWindow *parent, wxSizer *sizer, std::function<voi
                         if(toolType == ToolType::Brush)
                             MyApp::GetStrokeSettings().currentShape = ShapeType::Path;
                         else if(toolType == ToolType::Transform)
-                            MyApp::GetStrokeSettings().currentShape = ShapeType::None; });
+                            MyApp::GetStrokeSettings().currentShape = ShapeType::None;
+                        else if(toolType == ToolType::Text)
+                            MyApp::GetStrokeSettings().currentShape = ShapeType::Text; });
         toolPanes.push_back(toolPane);
         sizer->Add(toolPane, 0, wxRIGHT | wxBOTTOM, parent->FromDIP(5));
     }

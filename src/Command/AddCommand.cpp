@@ -14,7 +14,7 @@ AddCommand::~AddCommand()
     }
     if (m_historyPane)
     {
-        delete m_historyPane;
+        m_historyPane->Hide();
     }
 }
 

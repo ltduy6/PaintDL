@@ -8,6 +8,7 @@ enum class ToolType
     Transform,
     Rotate,
     CustomColor,
+    Text,
     None
 };
 
@@ -19,6 +20,7 @@ enum class ShapeType
     ITriangle,
     RTriangle,
     Diamond,
+    Text,
     None
 };
 

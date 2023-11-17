@@ -21,6 +21,7 @@ public:
     void SetView(DrawingView *view);
     void ShowExportDialog();
     void ReFreshCanvas();
+    void RotateCommand();
     DrawingView *GetView() const;
 
 private:
@@ -32,6 +33,7 @@ private:
     void OnMouseUp(wxMouseEvent &event);
     void OnMouseLeave(wxMouseEvent &event);
     void OnScroll(wxScrollEvent &event);
+    void OnKeyDown(wxKeyEvent &event);
     void HandleEvent(wxMouseEvent &event);
     void UpdateHistoryPanel();
 

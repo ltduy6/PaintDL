@@ -59,6 +59,15 @@ void ToolsPane::DrawContent(wxGraphicsContext *gc, const wxRect &rect, int round
         }
         break;
     }
+    case ToolType::Text:
+    {
+        wxBitmap bitmap("src/Assets/letter.png", wxBITMAP_TYPE_PNG);
+        if (bitmap.IsOk())
+        {
+            gc->DrawBitmap(bitmap, rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight());
+        }
+        break;
+    }
     default:
         break;
     }

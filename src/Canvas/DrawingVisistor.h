@@ -94,4 +94,15 @@ struct DrawingVisitor
         gc.FillPath(path);
         gc.StrokePath(path);
     }
+
+    void operator()(const Text &text)
+    {
+        gc.SetPen(wxPen(text.color, text.width));
+        gc.DrawRectangle(text.rect.m_x, text.rect.m_y, text.rect.m_width, text.rect.m_height);
+        wxFont font(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_LIGHT);
+        wxDouble width, height;
+        gc.SetFont(font, text.color);
+        gc.GetTextExtent(text.text, &width, &height);
+        gc.DrawText(_(text.text), text.rect.m_x + (text.rect.m_width - width) / 2, text.rect.m_y + (text.rect.m_height - height) / 2);
+    }
 };

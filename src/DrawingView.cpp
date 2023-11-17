@@ -90,6 +90,15 @@ void DrawingView::OnMouseDown(wxPoint pt)
             }
         }
     }
+    else if (MyApp::GetStrokeSettings().currentTool == ToolType::Text)
+    {
+        shapeCreator.Start(MyApp::GetStrokeSettings(), pt);
+        selectionBox = std::make_optional(SelectionBox{shapeCreator.GenerateTextObject(), MyApp::GetStrokeSettings().selectionHandleWidth});
+        if (selectionBox.has_value())
+        {
+            selectionBox->StartDragging(pt);
+        }
+    }
     else
     {
         selectionBox = {};
@@ -108,7 +117,7 @@ void DrawingView::OnMouseDrag(wxPoint pt)
             GetDocument()->Modify(true);
         }
     }
-    else
+    else if (MyApp::GetStrokeSettings().currentTool != ToolType::Text)
     {
         shapeCreator.Update(pt);
     }
@@ -124,9 +133,17 @@ void DrawingView::OnMouseDragEnd()
             selectionBox->FinishDragging();
         }
     }
-    else
+    else if (MyApp::GetStrokeSettings().currentTool != ToolType::Text)
     {
         selectionBox = {};
+    }
+}
+
+void DrawingView::OnKeyDown(wxChar t)
+{
+    if (MyApp::GetStrokeSettings().currentTool == ToolType::Text)
+    {
+        shapeCreator.UpdateKey(t);
     }
 }
 
@@ -167,6 +184,11 @@ void DrawingView::ResetModified()
 bool DrawingView::GetIsModified() const
 {
     return isModified && selectionBox.has_value();
+}
+
+bool DrawingView::GetIsSelected() const
+{
+    return selectionBox.has_value();
 }
 
 DrawingDocument *DrawingView::GetDocument() const

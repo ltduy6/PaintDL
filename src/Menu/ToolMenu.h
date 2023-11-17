@@ -15,5 +15,5 @@ public:
 private:
     std::vector<ToolsPane *> toolPanes;
     std::vector<std::function<void()>> callBacks;
-    const std::vector<ToolType> toolTypes = {ToolType::Brush, ToolType::Transform};
+    const std::vector<ToolType> toolTypes = {ToolType::Brush, ToolType::Transform, ToolType::Text};
 };

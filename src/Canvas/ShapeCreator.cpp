@@ -12,7 +12,6 @@ void ShapeCreator::Update(wxPoint pt)
     {
         throw std::runtime_error("ShapeCreator::Update() called without Start()");
     }
-
     std::visit(Visitor{[&](Path &path)
                        {
                            path.points.push_back(pt);
@@ -76,6 +75,43 @@ void ShapeCreator::Update(wxPoint pt)
                            diamond.rect.SetRight(right);
                            diamond.rect.SetTop(top);
                            diamond.rect.SetBottom(bottom);
+                       },
+                       [&](Text &text)
+                       {
+                           auto left = std::min(lastDragStart.x, pt.x);
+                           auto right = std::max(lastDragStart.x, pt.x);
+                           auto top = std::min(lastDragStart.y, pt.y);
+                           auto bottom = std::max(lastDragStart.y, pt.y);
+
+                           text.rect.SetLeft(left);
+                           text.rect.SetRight(right);
+                           text.rect.SetTop(top);
+                           text.rect.SetBottom(bottom);
+                       }},
+               shape.value());
+}
+
+void ShapeCreator::UpdateKey(wxChar key)
+{
+    if (!shape)
+    {
+        throw std::runtime_error("ShapeCreator::Update() called without Start()");
+    }
+    std::visit(Visitor{[&](Path &path) {
+                       },
+                       [&](Rect &rect) {
+                       },
+                       [&](Circle &circle) {
+                       },
+                       [&](ITriangle &triangle) {
+                       },
+                       [&](RTriangle &triangle) {
+                       },
+                       [&](Diamond &diamond) {
+                       },
+                       [&](Text &text)
+                       {
+                           text.text += wxChar(key);
                        }},
                shape.value());
 }
@@ -87,6 +123,11 @@ CanvasObject ShapeCreator::FinishAndGenerateObject()
         throw std::runtime_error("ShapeCreator::FinishAndGenerateObject() called without Start()");
     }
     return CanvasObject{std::exchange(shape, {}).value()};
+}
+
+CanvasObject ShapeCreator::GenerateTextObject()
+{
+    return CanvasObject{shape.value()};
 }
 
 void ShapeCreator::Cancel()

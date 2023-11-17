@@ -23,6 +23,10 @@ struct ShapeFactory
             return RTriangle{{origin2D.m_x, origin2D.m_y, 0, 0}, origin2D, origin2D, settings.color, settings.width};
         case ShapeType::Diamond:
             return Diamond{{origin2D.m_x, origin2D.m_y, 0, 0}, settings.color, settings.width};
+        case ShapeType::Text:
+        {
+            return Text{{origin2D.m_x, origin2D.m_y, 100, 50}, "Hello", settings.color, settings.width};
+        }
         default:
             throw std::runtime_error("Unknown shape type");
         }

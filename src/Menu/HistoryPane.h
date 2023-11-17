@@ -14,6 +14,9 @@
 class HistoryPane : public SelectablePane
 {
 public:
+    static int currentIndex;
+
+public:
     HistoryPane(wxWindow *parent, wxString name, wxWindowID id = wxID_ANY, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize);
     ~HistoryPane() override;
     void SetActive(bool isActive);

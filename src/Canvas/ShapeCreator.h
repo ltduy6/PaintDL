@@ -15,7 +15,9 @@ class ShapeCreator
 public:
     void Start(StrokeSettings strokeSettings, wxPoint point);
     void Update(wxPoint pt);
+    void UpdateKey(wxChar key);
     CanvasObject FinishAndGenerateObject();
+    CanvasObject GenerateTextObject();
     void Cancel();
     bool IsCreating() const;
     void Draw(wxGraphicsContext &gc);

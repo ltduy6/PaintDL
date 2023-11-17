@@ -18,6 +18,10 @@ CanvasObject &SelectionBox::GetObject() const
     return m_object;
 }
 
+void SelectionBox::UpdateKey(wxChar key)
+{
+}
+
 void SelectionBox::Draw(wxGraphicsContext &gc) const
 {
     gc.PushState();
@@ -140,6 +144,7 @@ void SelectionBox::FinishDragging()
 
 void SelectionBox::PredefinedRotate(double angle)
 {
+    m_oldTransformation = m_object.get().GetTransformation();
     m_object.get().UpdateRotationAngle(angle);
 }
 

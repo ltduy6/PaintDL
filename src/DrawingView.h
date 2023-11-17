@@ -17,6 +17,7 @@ public:
     void OnMouseDown(wxPoint);
     void OnMouseDrag(wxPoint);
     void OnMouseDragEnd();
+    void OnKeyDown(wxChar);
 
     void OnClear();
     bool OnClose(bool deleteWindow = true) override;
@@ -26,6 +27,7 @@ public:
     void ResetModified();
 
     bool GetIsModified() const;
+    bool GetIsSelected() const;
 
     // Setting the Frame title
     void OnChangeFilename() override;

@@ -17,6 +17,7 @@ DrawingCanvas::DrawingCanvas(wxWindow *parent, DrawingView *view, HistoryPanel &
     this->Bind(wxEVT_MOTION, &DrawingCanvas::OnMouseMove, this);
     this->Bind(wxEVT_LEFT_UP, &DrawingCanvas::OnMouseUp, this);
     this->Bind(wxEVT_LEAVE_WINDOW, &DrawingCanvas::OnMouseLeave, this);
+    // view->Bind(wxEVT_CHAR_HOOK, &DrawingCanvas::OnKeyDown, this);
 }
 
 void DrawingCanvas::ShowExportDialog()
@@ -52,6 +53,19 @@ void DrawingCanvas::ReFreshCanvas()
     Refresh();
 }
 
+void DrawingCanvas::RotateCommand()
+{
+    if (view->GetIsSelected() && MyApp::GetStrokeSettings().currentTool == ToolType::Transform)
+    {
+        view->PredefinedRotate(M_PI / 2);
+        Refresh();
+        HistoryPane *historyPane = m_historyPanel.get().createHistoryPane("Transform");
+        auto command = new SelectionCommand(this, historyPane);
+        view->GetDocument()->GetCommandProcessor()->Submit(command);
+        m_historyPanel.get().AddHistoryItem(view->GetDocument()->GetCommandProcessor(), historyPane);
+    }
+}
+
 DrawingView *DrawingCanvas::GetView() const
 {
     return view;
@@ -66,7 +80,7 @@ void DrawingCanvas::OnMouseDown(wxMouseEvent &event)
 
 void DrawingCanvas::OnMouseMove(wxMouseEvent &event)
 {
-    if (isDragging)
+    if (isDragging && MyApp::GetStrokeSettings().currentTool != ToolType::Text)
     {
         view->OnMouseDrag(event.GetPosition());
         Refresh();
@@ -75,7 +89,7 @@ void DrawingCanvas::OnMouseMove(wxMouseEvent &event)
 
 void DrawingCanvas::OnMouseUp(wxMouseEvent &event)
 {
-    if (isDragging)
+    if (isDragging && MyApp::GetStrokeSettings().currentTool != ToolType::Text)
     {
         isDragging = false;
         view->OnMouseDragEnd();
@@ -105,6 +119,12 @@ void DrawingCanvas::OnMouseLeave(wxMouseEvent &event)
 void DrawingCanvas::OnScroll(wxScrollEvent &event)
 {
     std::cout << "Yes\n";
+    Refresh();
+}
+
+void DrawingCanvas::OnKeyDown(wxKeyEvent &event)
+{
+    view->OnKeyDown(event.GetUnicodeKey());
     Refresh();
 }
 

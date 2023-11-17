@@ -15,7 +15,7 @@ public:
 
     Transformation GetTransformation() const;
     wxRect2DDouble GetBoundingBox() const;
-    Shape GetShape() const;
+    Shape &GetShape();
 
     bool operator==(const CanvasObject &other) const;
 
@@ -28,7 +28,7 @@ public:
     void SetTranslation(double translationX, double translationY);
 
 private:
-    const Shape m_shape;
+    Shape m_shape;
     const wxRect2DDouble m_boundingBox;
     Transformation m_transformation;
 };

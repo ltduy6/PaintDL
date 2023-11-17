@@ -104,6 +104,7 @@ void MyFrame::SetupCanvasForView(DrawingView *view)
     if (docPanel->GetChildren().size() > 0)
     {
         docPanel->GetSizer()->Clear(true);
+        historyPanelHolder.ClearHistory();
     }
 
     if (view != nullptr)
@@ -184,6 +185,7 @@ wxScrolled<wxPanel> *MyFrame::BuildControlsPanel(wxWindow *parent)
     addGroup("Image");
     addGroup("Size");
     addGroup("Shapes");
+
     historyPanelHolder.SetUp(controlsPanel, mainSizer);
 
     controlsPanel->SetSizer(mainSizer);
@@ -202,7 +204,7 @@ MyFrame::MyFrame(wxDocManager *manager, wxFrame *frame, wxWindowID id, const wxS
     splitter->SetMinimumPaneSize(FromDIP(150));
 
     m_controlsPanel = BuildControlsPanel(splitter);
-    docPanel = new wxScrolled<wxPanel>(splitter, wxID_ANY);
+    docPanel = new wxScrolled<wxPanel>(splitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS);
     docPanel->SetSizer(new wxBoxSizer(wxVERTICAL));
     docPanel->SetBackgroundColour(wxColour(231, 246, 242));
 

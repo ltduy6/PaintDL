@@ -17,22 +17,21 @@ void HistoryPanel::SetUp(wxWindow *parent, wxSizer *sizer)
 void HistoryPanel::AddHistoryItem(wxCommandProcessor *historyProcessor, HistoryPane *button)
 {
     wxString name = historyProcessor->GetCurrentCommand()->GetName();
-    size_t id = historyProcessor->GetCommands().GetCount() - 1;
-    currentCommand = id;
+    size_t id = historyProcessor->GetCommands().GetCount();
     buttons.push_back(button);
     button->AddCallback([this, historyProcessor, id]()
                         {
-        if (id < currentCommand)
+        int currentIndex = HistoryPane::currentIndex;
+        if (id < currentIndex)
         {
-            for (int i = 0; i < currentCommand - id; i++)
+            for (int i = 0; i < currentIndex - id; i++)
                 historyProcessor->Undo();
         }
-        else if (id > currentCommand)
+        else
         {
-            for (int i = 0; i < id - currentCommand; i++)
+            for (int i = 0; i < id - currentIndex; i++)
                 historyProcessor->Redo();
-        }
-        currentCommand = id; });
+        } });
     historySizer->Add(button, 0, wxEXPAND | wxALL, 2);
     historyPanel->Layout();
     historyPanel->GetParent()->Layout();
@@ -43,7 +42,7 @@ void HistoryPanel::ClearHistory()
 {
     if (historySizer)
     {
-        historySizer->Clear(true);
+        historySizer->Clear();
         historyPanel->Layout();
         historyPanel->GetParent()->Layout();
     }

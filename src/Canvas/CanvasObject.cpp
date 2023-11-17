@@ -25,7 +25,7 @@ wxRect2DDouble CanvasObject::GetBoundingBox() const
     return m_boundingBox;
 }
 
-Shape CanvasObject::GetShape() const
+Shape &CanvasObject::GetShape()
 {
     return m_shape;
 }

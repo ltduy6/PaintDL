@@ -9,8 +9,7 @@ void ImageMenu::SetUpImageMenu(wxWindow *parent, wxSizer *sizer)
 void ImageMenu::CallRotate(DrawingCanvas *canvas)
 {
     rotatePane->AddCallback([canvas]()
-                            { canvas->GetView()->PredefinedRotate(M_PI / 2); 
-                       canvas->Refresh(); });
+                            { canvas->RotateCommand(); });
 }
 
 ToolsPane *ImageMenu::GetRotatePane() const

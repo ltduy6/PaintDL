@@ -1,5 +1,7 @@
 #include "HistoryPane.h"
 
+int HistoryPane::currentIndex = 0;
+
 HistoryPane::HistoryPane(wxWindow *parent, wxString name, wxWindowID id, const wxPoint &pos, const wxSize &size)
     : SelectablePane(parent, id, pos, size), name(name)
 {
@@ -18,6 +20,10 @@ HistoryPane::~HistoryPane()
 void HistoryPane::SetActive(bool isActive)
 {
     this->isActive = isActive;
+    if (isActive)
+        currentIndex++;
+    else
+        currentIndex--;
     Refresh();
 }
 
