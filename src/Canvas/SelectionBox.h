@@ -11,7 +11,7 @@ class SelectionBox
 public:
     SelectionBox(CanvasObject &object, double handleWidth);
     Transformation GetTransformation() const;
-    CanvasObject &GetObject() const;
+    CanvasObject &GetObject();
     void UpdateKey(wxChar key);
     void Draw(wxGraphicsContext &gc) const;
     void StartDragging(wxPoint2DDouble point);
@@ -63,4 +63,5 @@ private:
     double m_currentRotateAngle{0.0};
     std::reference_wrapper<CanvasObject> m_object;
     Transformation m_oldTransformation;
+    wxAffineMatrix2D m_oldMatrix;
 };

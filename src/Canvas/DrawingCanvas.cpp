@@ -17,7 +17,7 @@ DrawingCanvas::DrawingCanvas(wxWindow *parent, DrawingView *view, HistoryPanel &
     this->Bind(wxEVT_MOTION, &DrawingCanvas::OnMouseMove, this);
     this->Bind(wxEVT_LEFT_UP, &DrawingCanvas::OnMouseUp, this);
     this->Bind(wxEVT_LEAVE_WINDOW, &DrawingCanvas::OnMouseLeave, this);
-    // view->Bind(wxEVT_CHAR_HOOK, &DrawingCanvas::OnKeyDown, this);
+    view->Bind(wxEVT_CHAR_HOOK, &DrawingCanvas::OnKeyDown, this);
 }
 
 void DrawingCanvas::ShowExportDialog()
@@ -80,7 +80,7 @@ void DrawingCanvas::OnMouseDown(wxMouseEvent &event)
 
 void DrawingCanvas::OnMouseMove(wxMouseEvent &event)
 {
-    if (isDragging && MyApp::GetStrokeSettings().currentTool != ToolType::Text)
+    if (isDragging)
     {
         view->OnMouseDrag(event.GetPosition());
         Refresh();
@@ -109,11 +109,25 @@ void DrawingCanvas::OnMouseUp(wxMouseEvent &event)
             view->ResetModified();
         }
     }
+    else if (MyApp::GetStrokeSettings().currentTool == ToolType::Text)
+    {
+        if (!view->GetIsModified())
+        {
+            HistoryPane *historyPane = m_historyPanel.get().createHistoryPane("Text");
+            auto command = new AddCommand(this, "Text", historyPane);
+            view->GetDocument()->GetCommandProcessor()->Submit(command);
+            m_historyPanel.get().AddHistoryItem(view->GetDocument()->GetCommandProcessor(), historyPane);
+        }
+        view->OnMouseDragEnd();
+    }
 }
 
 void DrawingCanvas::OnMouseLeave(wxMouseEvent &event)
 {
-    OnMouseUp(event);
+    if (MyApp::GetStrokeSettings().currentTool != ToolType::Text)
+    {
+        OnMouseUp(event);
+    }
 }
 
 void DrawingCanvas::OnScroll(wxScrollEvent &event)
@@ -126,6 +140,7 @@ void DrawingCanvas::OnKeyDown(wxKeyEvent &event)
 {
     view->OnKeyDown(event.GetUnicodeKey());
     Refresh();
+    event.Skip();
 }
 
 void DrawingCanvas::HandleEvent(wxMouseEvent &event)
@@ -169,6 +184,8 @@ wxString DrawingCanvas::getShapeCommandName()
         return "ITriangle";
     case ShapeType::RTriangle:
         return "RTriangle";
+    case ShapeType::Text:
+        return "Text";
     default:
         return "Shape";
     }

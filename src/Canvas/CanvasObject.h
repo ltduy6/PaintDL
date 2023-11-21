@@ -3,7 +3,6 @@
 #include "../Shape/Shape.h"
 #include "../Shape/ShapeUtils.h"
 #include "../Transform/Transformation.h"
-#include "DrawingVisistor.h"
 #include "ObjectSpace.h"
 
 class CanvasObject
@@ -11,24 +10,34 @@ class CanvasObject
 public:
     CanvasObject(const Shape &shape, Transformation transformation = {});
 
-    void Draw(wxGraphicsContext &gc) const;
+    void Draw(wxGraphicsContext &gc);
 
     Transformation GetTransformation() const;
     wxRect2DDouble GetBoundingBox() const;
     Shape &GetShape();
+    wxPoint2DDouble GetCenter() const;
+    wxPoint2DDouble GetOldCenter() const;
+    wxAffineMatrix2D GetLastTransformationMatrix() const;
 
     bool operator==(const CanvasObject &other) const;
 
     void UpdateScaleFactor(double scaleX, double scaleY);
     void UpdateRotationAngle(double angle);
     void UpdateTranslation(double translationX, double translationY);
+    void UpdateMatrix(wxAffineMatrix2D matrix);
 
     void SetScaleFactor(double scaleX, double scaleY);
     void SetRotationAngle(double angle);
     void SetTranslation(double translationX, double translationY);
+    void SetCenter(wxPoint2DDouble center);
+
+    void IncreaseHeight(double height);
 
 private:
     Shape m_shape;
-    const wxRect2DDouble m_boundingBox;
+    wxRect2DDouble m_boundingBox;
     Transformation m_transformation;
+    wxPoint2DDouble m_center;
+    wxPoint2DDouble m_oldCenter;
+    wxAffineMatrix2D m_lastTransformationMatrix;
 };

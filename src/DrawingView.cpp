@@ -68,7 +68,21 @@ void DrawingView::OnDraw(wxDC *dc)
 
 void DrawingView::OnMouseDown(wxPoint pt)
 {
-    if (MyApp::GetStrokeSettings().currentTool == ToolType::Transform)
+    switch (MyApp::GetStrokeSettings().currentTool)
+    {
+    case ToolType::Brush:
+    {
+        selectionBox = {};
+        shapeCreator.Start(MyApp::GetStrokeSettings(), pt);
+        break;
+    }
+    case ToolType::Shape:
+    {
+        selectionBox = {};
+        shapeCreator.Start(MyApp::GetStrokeSettings(), pt);
+        break;
+    }
+    case ToolType::Transform:
     {
         if (selectionBox.has_value())
         {
@@ -89,26 +103,39 @@ void DrawingView::OnMouseDown(wxPoint pt)
                 selectionBox->StartDragging(pt);
             }
         }
+        break;
     }
-    else if (MyApp::GetStrokeSettings().currentTool == ToolType::Text)
+    case ToolType::Text:
     {
-        shapeCreator.Start(MyApp::GetStrokeSettings(), pt);
-        selectionBox = std::make_optional(SelectionBox{shapeCreator.GenerateTextObject(), MyApp::GetStrokeSettings().selectionHandleWidth});
         if (selectionBox.has_value())
         {
             selectionBox->StartDragging(pt);
         }
+        else
+        {
+            selectionBox = {};
+            shapeCreator.Start(MyApp::GetStrokeSettings(), pt);
+        }
+        break;
     }
-    else
-    {
-        selectionBox = {};
-        shapeCreator.Start(MyApp::GetStrokeSettings(), pt);
     }
 }
 
 void DrawingView::OnMouseDrag(wxPoint pt)
 {
-    if (MyApp::GetStrokeSettings().currentTool == ToolType::Transform)
+    switch (MyApp::GetStrokeSettings().currentTool)
+    {
+    case ToolType::Brush:
+    {
+        shapeCreator.Update(pt);
+        break;
+    }
+    case ToolType::Shape:
+    {
+        shapeCreator.Update(pt);
+        break;
+    }
+    case ToolType::Transform:
     {
         if (selectionBox.has_value() && selectionBox->isDragging())
         {
@@ -116,34 +143,65 @@ void DrawingView::OnMouseDrag(wxPoint pt)
             selectionBox->Drag(pt);
             GetDocument()->Modify(true);
         }
+        break;
     }
-    else if (MyApp::GetStrokeSettings().currentTool != ToolType::Text)
+    case ToolType::Text:
     {
-        shapeCreator.Update(pt);
+        if (selectionBox.has_value() && selectionBox->isDragging())
+        {
+            isModified = true;
+            selectionBox->Drag(pt);
+            GetDocument()->Modify(true);
+        }
+        break;
+    }
     }
 }
 
 void DrawingView::OnMouseDragEnd()
 {
     // Nothing to do here
-    if (MyApp::GetStrokeSettings().currentTool == ToolType::Transform)
+    switch (MyApp::GetStrokeSettings().currentTool)
+    {
+    case ToolType::Transform:
     {
         if (selectionBox.has_value())
         {
             selectionBox->FinishDragging();
         }
+        break;
     }
-    else if (MyApp::GetStrokeSettings().currentTool != ToolType::Text)
+    case ToolType::Brush:
     {
         selectionBox = {};
+        break;
+    }
+    case ToolType::Shape:
+    {
+        selectionBox = {};
+        break;
+    }
+    case ToolType::Text:
+    {
+        if (!GetIsModified())
+        {
+            auto iterator = GetDocument()->objects.back();
+            selectionBox = std::make_optional(SelectionBox{iterator, MyApp::GetStrokeSettings().selectionHandleWidth});
+        }
+        else
+        {
+            selectionBox->FinishDragging();
+        }
+        break;
+    }
     }
 }
 
 void DrawingView::OnKeyDown(wxChar t)
 {
-    if (MyApp::GetStrokeSettings().currentTool == ToolType::Text)
+    if (selectionBox.has_value())
     {
-        shapeCreator.UpdateKey(t);
+        selectionBox->UpdateKey(t);
     }
 }
 
@@ -173,7 +231,11 @@ void DrawingView::PredefinedRotate(double angle)
 
 void DrawingView::Refresh()
 {
-    selectionBox = {};
+    if (selectionBox.has_value())
+    {
+        selectionBox->FinishDragging();
+        selectionBox = {};
+    }
 }
 
 void DrawingView::ResetModified()

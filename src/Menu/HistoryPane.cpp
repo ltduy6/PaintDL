@@ -5,16 +5,10 @@ int HistoryPane::currentIndex = 0;
 HistoryPane::HistoryPane(wxWindow *parent, wxString name, wxWindowID id, const wxPoint &pos, const wxSize &size)
     : SelectablePane(parent, id, pos, size), name(name)
 {
-    width = new wxDouble;
-    height = new wxDouble;
 }
 
 HistoryPane::~HistoryPane()
 {
-    delete width;
-    delete height;
-    width = nullptr;
-    height = nullptr;
 }
 
 void HistoryPane::SetActive(bool isActive)
@@ -45,6 +39,7 @@ void HistoryPane::DrawContent(wxGraphicsContext *gc, const wxRect &rect, int rou
     gc->DrawRoundedRectangle(rect.x, rect.y, rect.width, rect.height, roundness);
 
     gc->SetFont(font, textColor);
-    gc->GetTextExtent(name, width, height);
-    gc->DrawText(_(name), rect.x + 5, rect.y + (rect.height - *height) / 2);
+    wxDouble width, height;
+    gc->GetTextExtent(name, &width, &height);
+    gc->DrawText(_(name), rect.x + 5, rect.y + (rect.height - height) / 2);
 }

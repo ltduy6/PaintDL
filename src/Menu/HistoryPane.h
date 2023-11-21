@@ -26,7 +26,5 @@ private:
 
 private:
     wxString name;
-    wxDouble *width;
-    wxDouble *height;
     bool isActive{true};
 };

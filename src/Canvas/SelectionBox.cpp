@@ -12,7 +12,7 @@ Transformation SelectionBox::GetTransformation() const
     return m_oldTransformation;
 }
 
-CanvasObject &SelectionBox::GetObject() const
+CanvasObject &SelectionBox::GetObject()
 {
     // TODO: insert return statement here
     return m_object;
@@ -20,6 +20,25 @@ CanvasObject &SelectionBox::GetObject() const
 
 void SelectionBox::UpdateKey(wxChar key)
 {
+    wxDouble newHeight = 0;
+    wxDouble newWidth = 0;
+    std::visit(Visitor{[&](Path &path) {
+                       },
+                       [&](Rect &rect) {
+                       },
+                       [&](Circle &circle) {
+                       },
+                       [&](ITriangle &triangle) {
+                       },
+                       [&](RTriangle &triangle) {
+                       },
+                       [&](Diamond &diamond) {
+                       },
+                       [&](Text &text)
+                       {
+                           text.text += wxChar(key);
+                       }},
+               m_object.get().GetShape());
 }
 
 void SelectionBox::Draw(wxGraphicsContext &gc) const
@@ -215,7 +234,7 @@ bool SelectionBox::FullBoxHitTest(wxPoint2DDouble point) const
 
 void SelectionBox::ScaleUsingHandleMovement(wxPoint2DDouble dragStart, wxPoint2DDouble dragEnd, wxPoint2DDouble handleCenter)
 {
-    const auto directionFromCenter = ObjectSpace::ToObjectCoordinates(m_object.get(), handleCenter) - m_object.get().GetBoundingBox().GetCentre();
+    const auto directionFromCenter = ObjectSpace::ToObjectCoordinates(m_object.get(), handleCenter) - m_object.get().GetCenter();
     const auto dragInObjectSpace = ObjectSpace::ToObjectDistance(m_object.get(), dragEnd - dragStart);
 
     const auto [halfBoxWidth, halfBoxHeight] = m_object.get().GetBoundingBox().GetSize() / 2;
