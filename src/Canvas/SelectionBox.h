@@ -12,10 +12,11 @@ public:
     SelectionBox(CanvasObject &object, double handleWidth);
     Transformation GetTransformation() const;
     CanvasObject &GetObject();
-    void UpdateKey(wxChar key);
+    void UpdateKey(wxChar key, bool isDelete = false);
     void Draw(wxGraphicsContext &gc) const;
     void StartDragging(wxPoint2DDouble point);
     bool isDragging() const;
+    bool isCanRotate() const;
     void Drag(wxPoint2DDouble pt);
     void FinishDragging();
     void PredefinedRotate(double angle);

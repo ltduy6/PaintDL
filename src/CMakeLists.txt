@@ -19,6 +19,7 @@ set(SRCS
 main.cpp 
 DrawingView.cpp 
 DrawingDocument.cpp
+CanvasInfoPanel.cpp
 # Canvas folder
 Canvas/DrawingCanvas.cpp 
 Canvas/CanvasObject.cpp
@@ -39,6 +40,7 @@ Menu/ToolMenu.cpp
 Menu/ImageMenu.cpp
 Menu/HistoryPanel.cpp
 Menu/HistoryPane.cpp
+Menu/MenuTemplate.cpp
 # Command folder
 Command/AddCommand.cpp
 Command/SelectionCommand.cpp

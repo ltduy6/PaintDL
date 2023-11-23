@@ -66,6 +66,15 @@ void DrawingCanvas::RotateCommand()
     }
 }
 
+void DrawingCanvas::CallScale(double scaleFactor)
+{
+    if (view)
+    {
+        view->SetScaleObjects(scaleFactor, wxPoint2DDouble(this->GetParent()->GetClientSize().x / 2, this->GetParent()->GetClientSize().y / 2));
+        Refresh();
+    }
+}
+
 DrawingView *DrawingCanvas::GetView() const
 {
     return view;
@@ -91,8 +100,8 @@ void DrawingCanvas::OnMouseUp(wxMouseEvent &event)
 {
     if (isDragging && MyApp::GetStrokeSettings().currentTool != ToolType::Text)
     {
-        isDragging = false;
         view->OnMouseDragEnd();
+        isDragging = false;
         if (MyApp::GetStrokeSettings().currentTool != ToolType::Transform)
         {
             HistoryPane *historyPane = m_historyPanel.get().createHistoryPane(getShapeCommandName());
@@ -111,10 +120,11 @@ void DrawingCanvas::OnMouseUp(wxMouseEvent &event)
     }
     else if (MyApp::GetStrokeSettings().currentTool == ToolType::Text)
     {
+        isDragging = false;
         if (!view->GetIsModified())
         {
             HistoryPane *historyPane = m_historyPanel.get().createHistoryPane("Text");
-            auto command = new AddCommand(this, "Text", historyPane);
+            auto command = new AddCommand(this, "Text", historyPane, false);
             view->GetDocument()->GetCommandProcessor()->Submit(command);
             m_historyPanel.get().AddHistoryItem(view->GetDocument()->GetCommandProcessor(), historyPane);
         }
@@ -138,7 +148,7 @@ void DrawingCanvas::OnScroll(wxScrollEvent &event)
 
 void DrawingCanvas::OnKeyDown(wxKeyEvent &event)
 {
-    view->OnKeyDown(event.GetUnicodeKey());
+    view->OnKeyDown(event);
     Refresh();
     event.Skip();
 }
@@ -197,6 +207,9 @@ void DrawingCanvas::OnPaint(wxPaintEvent &event)
 
     if (view)
     {
+        wxDouble x = GetClientSize().x / 2;
+        wxDouble y = GetClientSize().y / 2;
+        view->SetCenter(wxPoint(x, y));
         view->OnDraw(&dc);
     }
 }

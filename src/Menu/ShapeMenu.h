@@ -2,13 +2,14 @@
 
 #include "ShapePane.h"
 #include "../MyApp.h"
+#include "MenuTemplate.h"
 
 #include <functional>
 
-class ShapeMenu
+class ShapeMenu : public MenuTemplate
 {
 public:
-    void SetUpShapeMenu(wxWindow *parent, wxSizer *sizer, std::function<void()> reset);
+    void SetUpShapeMenu(wxWindow *parent, wxSizer *sizer, wxStaticText *text, std::function<void()> reset);
     void SelectShapePane();
     void AddCallBack(std::function<void()> callBack);
 

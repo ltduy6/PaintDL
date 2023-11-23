@@ -17,7 +17,7 @@ public:
     void OnMouseDown(wxPoint);
     void OnMouseDrag(wxPoint);
     void OnMouseDragEnd();
-    void OnKeyDown(wxChar);
+    void OnKeyDown(wxKeyEvent &event);
 
     void OnClear();
     bool OnClose(bool deleteWindow = true) override;
@@ -25,6 +25,8 @@ public:
     void PredefinedRotate(double angle);
     void Refresh();
     void ResetModified();
+    void SetCenter(wxPoint);
+    void SetScaleObjects(double scaleFactor, wxPoint2DDouble center);
 
     bool GetIsModified() const;
     bool GetIsSelected() const;
@@ -44,6 +46,7 @@ private:
 
 private:
     wxPoint lastDragStart{};
+    wxPoint screenCenter{};
     ShapeCreator shapeCreator{};
     std::optional<SelectionBox> selectionBox{};
     bool isModified{false};

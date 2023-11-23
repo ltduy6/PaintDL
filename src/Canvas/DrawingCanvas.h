@@ -22,6 +22,7 @@ public:
     void ShowExportDialog();
     void ReFreshCanvas();
     void RotateCommand();
+    void CallScale(double scaleFactor);
     DrawingView *GetView() const;
 
 private:

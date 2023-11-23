@@ -15,6 +15,7 @@ struct DrawingVisitor
     wxGraphicsContext &gc;
     wxAffineMatrix2D *matrix;
     wxRect2DDouble *boundingBox;
+    wxDouble *angle;
 
     void operator()(const Rect &rect)
     {
@@ -156,6 +157,7 @@ struct DrawingVisitor
         gc.GetTextExtent(text.text, &width, &height);
         wxDouble *widthBox = new wxDouble(text.rect.m_width);
         wxPoint2DDouble *topLeft = new wxPoint2DDouble(text.rect.m_x, text.rect.m_y);
+        gc.PushState();
         if (matrix)
         {
             *widthBox = abs(matrix->TransformDistance(text.rect.GetLeftTop() - text.rect.GetRightTop()).m_x);
@@ -206,6 +208,7 @@ struct DrawingVisitor
             }
             delete newHeight;
         }
+        gc.PopState();
         delete widthBox;
         delete topLeft;
     }

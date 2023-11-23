@@ -4,11 +4,12 @@
 #include "ToolsPane.h"
 #include "RoundedButton.h"
 #include "../Canvas/DrawingCanvas.h"
+#include "MenuTemplate.h"
 
-class ImageMenu
+class ImageMenu : public MenuTemplate
 {
 public:
-    void SetUpImageMenu(wxWindow *parent, wxSizer *sizer);
+    void SetUpImageMenu(wxWindow *parent, wxSizer *sizer, wxStaticText *text);
     void CallRotate(DrawingCanvas *canvas);
     ToolsPane *GetRotatePane() const;
 

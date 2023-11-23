@@ -5,7 +5,7 @@ void HistoryPanel::SetUp(wxWindow *parent, wxSizer *sizer)
     historyPanel = new wxScrolled<wxPanel>(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
     historySizer = new wxBoxSizer(wxVERTICAL);
     historyPanel->SetScrollRate(0, parent->FromDIP(10));
-    historyPanel->SetBackgroundColour(wxColour(44, 51, 51));
+    historyPanel->SetBackgroundColour(wxColour(83, 83, 83));
     historyPanel->SetSizer(historySizer);
 
     auto text = new wxStaticText(parent, wxID_ANY, "History Panel");

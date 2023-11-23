@@ -18,7 +18,7 @@ CanvasObject &SelectionBox::GetObject()
     return m_object;
 }
 
-void SelectionBox::UpdateKey(wxChar key)
+void SelectionBox::UpdateKey(wxChar key, bool isDelete)
 {
     wxDouble newHeight = 0;
     wxDouble newWidth = 0;
@@ -36,7 +36,17 @@ void SelectionBox::UpdateKey(wxChar key)
                        },
                        [&](Text &text)
                        {
-                           text.text += wxChar(key);
+                           if (!isDelete)
+                           {
+                               text.text += wxChar(key);
+                           }
+                           else
+                           {
+                               if (!text.text.empty())
+                               {
+                                   text.text.RemoveLast();
+                               }
+                           }
                        }},
                m_object.get().GetShape());
 }
@@ -62,7 +72,10 @@ void SelectionBox::Draw(wxGraphicsContext &gc) const
     auto rotationHandleCenter = GetRotationHandleCenter();
 
     gc.StrokeLines(rectVertices.size(), rectVertices.data());
-    gc.StrokeLine(rotationHandleStart.m_x, rotationHandleStart.m_y, rotationHandleCenter.m_x, rotationHandleCenter.m_y);
+    if (m_object.get().GetCanRotate())
+    {
+        gc.StrokeLine(rotationHandleStart.m_x, rotationHandleStart.m_y, rotationHandleCenter.m_x, rotationHandleCenter.m_y);
+    }
 
     auto handleCenters = std::array{
         GetTopLeftHandleCenter(),
@@ -82,7 +95,7 @@ void SelectionBox::Draw(wxGraphicsContext &gc) const
 
 void SelectionBox::StartDragging(wxPoint2DDouble point)
 {
-    if (HandleHitTest(point, GetRotationHandleCenter()))
+    if (HandleHitTest(point, GetRotationHandleCenter()) && m_object.get().GetCanRotate())
     {
         m_draggableElement = DraggableElement::Rotation;
     }
@@ -120,6 +133,11 @@ void SelectionBox::StartDragging(wxPoint2DDouble point)
 bool SelectionBox::isDragging() const
 {
     return m_draggableElement.has_value();
+}
+
+bool SelectionBox::isCanRotate() const
+{
+    return m_object.get().GetCanRotate();
 }
 
 void SelectionBox::Drag(wxPoint2DDouble pt)
@@ -204,6 +222,9 @@ wxPoint2DDouble SelectionBox::GetBottomRightHandleCenter() const
 
 void SelectionBox::DrawHandle(wxGraphicsContext &gc, wxPoint2DDouble center) const
 {
+    if (!m_object.get().GetCanRotate() && center == GetRotationHandleCenter())
+        return;
+
     gc.PushState();
 
     gc.Translate(center.m_x, center.m_y);

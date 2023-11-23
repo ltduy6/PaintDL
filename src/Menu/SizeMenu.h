@@ -2,12 +2,13 @@
 
 #include "SizePane.h"
 #include "../MyApp.h"
+#include "MenuTemplate.h"
 #include <vector>
 
-class SizeMenu
+class SizeMenu : public MenuTemplate
 {
 public:
-    void SetUpSizeMenu(wxWindow *parent, wxSizer *sizer);
+    void SetUpSizeMenu(wxWindow *parent, wxSizer *sizer, wxStaticText *text);
 
 private:
     void SelectSizePane(SizePane *pane);

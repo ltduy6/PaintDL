@@ -9,6 +9,11 @@ void SizePane::DrawContent(wxGraphicsContext *gc, const wxRect &rect, int roundn
 {
     gc->SetPen(wxPen(*wxTRANSPARENT_PEN));
     gc->SetBrush(wxBrush(*wxWHITE_BRUSH));
+    if (!IsEnabled())
+    {
+        std::cout << "disabled" << std::endl;
+        gc->SetBrush(wxBrush(*wxGREY_BRUSH));
+    }
     wxSize size{FromDIP(15), FromDIP(width)};
     gc->DrawRectangle(rect.GetX() + rect.GetWidth() / 2 - size.GetWidth() / 2,
                       rect.GetY() + rect.GetHeight() / 2 - size.GetHeight() / 2,

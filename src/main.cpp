@@ -21,6 +21,7 @@
 #include "Canvas/DrawingCanvas.h"
 #include "DrawingDocument.h"
 #include "DrawingView.h"
+#include "CanvasInfoPanel.h"
 
 wxIMPLEMENT_APP(MyApp);
 
@@ -45,8 +46,10 @@ private:
     ToolMenu toolMenu{};
     ImageMenu imageMenu{};
     HistoryPanel historyPanelHolder{};
+    CanvasInfoPanel canvasInfoPanel{};
 
     wxPanel *docPanel;
+    wxPanel *zoomPanel;
     wxScrolled<wxPanel> *m_controlsPanel;
     wxScrolled<wxPanel> *m_historyPanel;
 
@@ -109,15 +112,20 @@ void MyFrame::SetupCanvasForView(DrawingView *view)
 
     if (view != nullptr)
     {
-        auto canvas = new DrawingCanvas(docPanel, view, historyPanelHolder, wxID_ANY, wxPoint(0, 0), wxSize(1200, 1200));
-        docPanel->GetSizer()->Add(canvas, 1, wxEXPAND);
-        canvas->CenterOnParent();
+        auto canvas = new DrawingCanvas(docPanel, view, historyPanelHolder, wxID_ANY, wxPoint(0, 0), wxSize(2474, 1515));
+        docPanel->GetSizer()->Add(canvas, 0, wxALIGN_CENTRE_HORIZONTAL, 5);
+        canvas->CentreOnParent();
 
         imageMenu.CallRotate(canvas);
         shapeMenu.AddCallBack([canvas]()
                               { canvas->ReFreshCanvas(); });
         toolMenu.AddCallBack([canvas]()
                              { canvas->ReFreshCanvas(); });
+        canvasInfoPanel.SetUpChoice([canvas, this](double scaleFactor)
+                                    { 
+                                        canvas->SetSize(wxSize(2474 * scaleFactor, 1515 * scaleFactor));
+                                        canvas->CentreOnParent();
+                                        canvas->CallScale(scaleFactor); });
 
         m_canvas = canvas;
 
@@ -130,8 +138,6 @@ void MyFrame::SetupCanvasForView(DrawingView *view)
     {
         this->SetTitle(wxGetApp().GetAppDisplayName());
     }
-
-    docPanel->Layout();
 }
 
 wxScrolled<wxPanel> *MyFrame::BuildControlsPanel(wxWindow *parent)
@@ -139,7 +145,7 @@ wxScrolled<wxPanel> *MyFrame::BuildControlsPanel(wxWindow *parent)
     auto controlsPanel = new wxScrolled<wxPanel>(parent, wxID_ANY);
     controlsPanel->SetScrollRate(0, FromDIP(10));
 
-    controlsPanel->SetBackgroundColour(wxColour(44, 51, 51));
+    controlsPanel->SetBackgroundColour(wxColour(83, 83, 83));
 
     auto mainSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -161,15 +167,15 @@ wxScrolled<wxPanel> *MyFrame::BuildControlsPanel(wxWindow *parent)
         }
         else if (title == "Image")
         {
-            imageMenu.SetUpImageMenu(controlsPanel, wrapSizer);
+            imageMenu.SetUpImageMenu(controlsPanel, wrapSizer, text);
         }
         else if (title == "Size")
         {
-            sizeMenu.SetUpSizeMenu(controlsPanel, wrapSizer);
+            sizeMenu.SetUpSizeMenu(controlsPanel, wrapSizer, text);
         }
         else if (title == "Shapes")
         {
-            shapeMenu.SetUpShapeMenu(controlsPanel, wrapSizer, [this]()
+            shapeMenu.SetUpShapeMenu(controlsPanel, wrapSizer, text, [this]()
                                      { ResetControls(); });
         }
         else
@@ -182,9 +188,9 @@ wxScrolled<wxPanel> *MyFrame::BuildControlsPanel(wxWindow *parent)
 
     addGroup("Colors");
     addGroup("Tools");
-    addGroup("Image");
-    addGroup("Size");
     addGroup("Shapes");
+    addGroup("Size");
+    addGroup("Image");
 
     historyPanelHolder.SetUp(controlsPanel, mainSizer);
 
@@ -192,6 +198,27 @@ wxScrolled<wxPanel> *MyFrame::BuildControlsPanel(wxWindow *parent)
     controlsPanel->Layout();
     mainSizer->Fit(controlsPanel);
 
+    imageMenu.Show(false);
+    toolMenu.AddHideCallBack([this]()
+                             {  std::cout << "ToolMenu callback" << std::endl;
+                            imageMenu.Show(false); },
+                             ToolType::Brush);
+    toolMenu.AddHideCallBack([this]()
+                             {  std::cout << "ToolMenu callback" << std::endl;
+                            imageMenu.Show(false); },
+                             ToolType::Text);
+    toolMenu.AddHideCallBack([this]()
+                             {
+                            shapeMenu.Show(false);
+                            sizeMenu.Show(false); },
+                             ToolType::Transform);
+    toolMenu.AddShowCallBack([this]()
+                             { imageMenu.Show(true); },
+                             ToolType::Transform);
+    toolMenu.AddShowCallBack([this]()
+                             { shapeMenu.Show(true);
+                            sizeMenu.Show(true); },
+                             ToolType::Brush);
     return controlsPanel;
 }
 
@@ -199,20 +226,30 @@ MyFrame::MyFrame(wxDocManager *manager, wxFrame *frame, wxWindowID id, const wxS
                  const wxPoint &pos, const wxSize &size)
     : wxDocParentFrame(manager, frame, id, title, pos, size)
 {
-    wxSplitterWindow *splitter = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_BORDER | wxSP_LIVE_UPDATE);
-
+    wxSplitterWindow *splitter = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_BORDER | wxSP_NOSASH);
+    wxSplitterWindow *docSplitter = new wxSplitterWindow(splitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_BORDER | wxSP_NOSASH);
     splitter->SetMinimumPaneSize(FromDIP(150));
 
     m_controlsPanel = BuildControlsPanel(splitter);
-    docPanel = new wxScrolled<wxPanel>(splitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS);
+    docPanel = new wxScrolled<wxPanel>(docSplitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS);
     docPanel->SetSizer(new wxBoxSizer(wxVERTICAL));
-    docPanel->SetBackgroundColour(wxColour(231, 246, 242));
+    docPanel->SetBackgroundColour(wxColour(40, 40, 40));
 
-    splitter->SplitVertically(m_controlsPanel, docPanel);
+    zoomPanel = new wxPanel(docSplitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS);
+    zoomPanel->SetSizer(new wxBoxSizer(wxVERTICAL));
+    zoomPanel->SetBackgroundColour(wxColour(83, 83, 83));
+
+    canvasInfoPanel.Setup(zoomPanel);
+
+    docSplitter->SplitHorizontally(docPanel, zoomPanel);
+    docSplitter->SetMinimumPaneSize(FromDIP(800));
+
+    splitter->SplitVertically(m_controlsPanel, docSplitter);
     splitter->SetSashPosition(FromDIP(100));
 
     this->SetSize(FromDIP(800), FromDIP(500));
     this->SetMinSize({FromDIP(400), FromDIP(200)});
+    this->Maximize();
 
     BuildMenuBar();
 }

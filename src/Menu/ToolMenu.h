@@ -11,6 +11,8 @@ public:
     void SetUpToolMenu(wxWindow *parent, wxSizer *sizer, std::function<void()> reset);
     void SelectToolPane();
     void AddCallBack(std::function<void()> callBack);
+    void AddShowCallBack(std::function<void()> callBack, ToolType type);
+    void AddHideCallBack(std::function<void()> callBack, ToolType type);
 
 private:
     std::vector<ToolsPane *> toolPanes;

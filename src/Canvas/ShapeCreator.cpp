@@ -147,5 +147,5 @@ void ShapeCreator::Draw(wxGraphicsContext &gc)
         return;
     }
 
-    std::visit(DrawingVisitor{gc, nullptr, nullptr}, shape.value());
+    std::visit(DrawingVisitor{gc, nullptr, nullptr, nullptr}, shape.value());
 }

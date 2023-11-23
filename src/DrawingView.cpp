@@ -100,6 +100,7 @@ void DrawingView::OnMouseDown(wxPoint pt)
 
             if (selectionBox.has_value())
             {
+                std::cout << "Yes" << std::endl;
                 selectionBox->StartDragging(pt);
             }
         }
@@ -188,20 +189,23 @@ void DrawingView::OnMouseDragEnd()
             auto iterator = GetDocument()->objects.back();
             selectionBox = std::make_optional(SelectionBox{iterator, MyApp::GetStrokeSettings().selectionHandleWidth});
         }
-        else
-        {
-            selectionBox->FinishDragging();
-        }
         break;
     }
     }
 }
 
-void DrawingView::OnKeyDown(wxChar t)
+void DrawingView::OnKeyDown(wxKeyEvent &event)
 {
     if (selectionBox.has_value())
     {
-        selectionBox->UpdateKey(t);
+        if (event.GetKeyCode() != WXK_BACK)
+        {
+            selectionBox->UpdateKey(event.GetUnicodeKey());
+        }
+        else
+        {
+            selectionBox->UpdateKey(event.GetUnicodeKey(), true);
+        }
     }
 }
 
@@ -243,6 +247,20 @@ void DrawingView::ResetModified()
     isModified = false;
 }
 
+void DrawingView::SetCenter(wxPoint pt)
+{
+    screenCenter = pt;
+}
+
+void DrawingView::SetScaleObjects(double scaleFactor, wxPoint2DDouble center)
+{
+    CanvasObject::globalScaleFactor = scaleFactor;
+    for (auto &obj : GetDocument()->objects)
+    {
+        obj.get().SetScaleMatrix(scaleFactor, center);
+    }
+}
+
 bool DrawingView::GetIsModified() const
 {
     return isModified && selectionBox.has_value();
@@ -250,7 +268,7 @@ bool DrawingView::GetIsModified() const
 
 bool DrawingView::GetIsSelected() const
 {
-    return selectionBox.has_value();
+    return selectionBox.has_value() && selectionBox->isCanRotate();
 }
 
 DrawingDocument *DrawingView::GetDocument() const

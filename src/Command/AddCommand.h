@@ -8,7 +8,7 @@
 class AddCommand : public wxCommand
 {
 public:
-    AddCommand(DrawingCanvas *canvas, wxString name, HistoryPane *historyPane);
+    AddCommand(DrawingCanvas *canvas, wxString name, HistoryPane *historyPane, bool canRotate = true);
     ~AddCommand();
 
     virtual bool Do() override;

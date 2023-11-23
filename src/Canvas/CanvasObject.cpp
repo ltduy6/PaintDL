@@ -1,21 +1,37 @@
 #include "CanvasObject.h"
 #include "DrawingVisistor.h"
 
+double CanvasObject::globalScaleFactor = 1;
+
 CanvasObject::CanvasObject(const Shape &shape, Transformation transformation)
     : m_shape(shape), m_transformation(transformation), m_boundingBox{ShapeUltils::CalculateBoundingBox(shape)}
 {
     m_center = m_boundingBox.GetCentre();
+    initialScaleFactor = globalScaleFactor;
 }
 
 void CanvasObject::Draw(wxGraphicsContext &gc)
 {
     gc.PushState();
 
+    gc.SetTransform(gc.CreateMatrix(m_scaleMatrix));
     wxAffineMatrix2D *matrix = new wxAffineMatrix2D(ObjectSpace::GetTransformationMatrix(*this));
-    std::visit(DrawingVisitor{gc, matrix, &m_boundingBox}, m_shape);
+    wxDouble *angle = new wxDouble(m_transformation.rotationAngle);
+    std::visit(DrawingVisitor{gc, matrix, &m_boundingBox, angle}, m_shape);
     delete matrix;
+    delete angle;
 
     gc.PopState();
+}
+
+void CanvasObject::SetScaleMatrix(double scaleFactor, wxPoint2DDouble center)
+{
+    std::cout << globalScaleFactor / initialScaleFactor << std::endl;
+    std::cout << center.m_x << " " << center.m_y << std::endl;
+    wxAffineMatrix2D *newMatrix = new wxAffineMatrix2D();
+    newMatrix->Scale(globalScaleFactor / initialScaleFactor, globalScaleFactor / initialScaleFactor);
+    m_scaleMatrix = *newMatrix;
+    delete newMatrix;
 }
 
 Transformation CanvasObject::GetTransformation() const
@@ -52,6 +68,11 @@ bool CanvasObject::operator==(const CanvasObject &other) const
 {
     // return m_shape == other.m_shape && m_transformation == other.m_transformation && m_boundingBox == other.m_boundingBox;
     return true;
+}
+
+bool CanvasObject::GetCanRotate() const
+{
+    return isCanRotate;
 }
 
 void CanvasObject::UpdateScaleFactor(double scaleX, double scaleY)
@@ -97,6 +118,11 @@ void CanvasObject::SetCenter(wxPoint2DDouble center)
 {
     m_oldCenter = m_center;
     m_center = center;
+}
+
+void CanvasObject::SetCanRotate(bool canRotate)
+{
+    isCanRotate = canRotate;
 }
 
 void CanvasObject::IncreaseHeight(double height)

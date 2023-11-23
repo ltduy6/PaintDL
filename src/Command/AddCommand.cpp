@@ -1,9 +1,10 @@
 #include "AddCommand.h"
 #include "../MyApp.h"
 
-AddCommand::AddCommand(DrawingCanvas *canvas, wxString name, HistoryPane *historyPane) : wxCommand(true, name), m_canvas(canvas), m_historyPane(historyPane)
+AddCommand::AddCommand(DrawingCanvas *canvas, wxString name, HistoryPane *historyPane, bool canRotate) : wxCommand(true, name), m_canvas(canvas), m_historyPane(historyPane)
 {
     m_object = new CanvasObject(m_canvas->GetView()->GetCanvasObject());
+    m_object->SetCanRotate(canRotate);
 }
 
 AddCommand::~AddCommand()
