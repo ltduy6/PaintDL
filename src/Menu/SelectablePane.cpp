@@ -44,7 +44,6 @@ void SelectablePane::OnPaint(wxPaintEvent &event)
         if (isHover)
         {
             gc->SetBrush(wxColor(89, 101, 101));
-
             gc->DrawRoundedRectangle(selectionRect.GetX(), selectionRect.GetY(), selectionRect.GetWidth(), selectionRect.GetHeight(), roundness);
         }
 

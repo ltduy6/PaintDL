@@ -48,7 +48,7 @@ private:
     HistoryPanel historyPanelHolder{};
     CanvasInfoPanel canvasInfoPanel{};
 
-    wxPanel *docPanel;
+    wxScrolled<wxPanel> *docPanel;
     wxPanel *zoomPanel;
     wxScrolled<wxPanel> *m_controlsPanel;
     wxScrolled<wxPanel> *m_historyPanel;
@@ -112,20 +112,15 @@ void MyFrame::SetupCanvasForView(DrawingView *view)
 
     if (view != nullptr)
     {
-        auto canvas = new DrawingCanvas(docPanel, view, historyPanelHolder, wxID_ANY, wxPoint(0, 0), wxSize(2474, 1515));
-        docPanel->GetSizer()->Add(canvas, 0, wxALIGN_CENTRE_HORIZONTAL, 5);
-        canvas->CentreOnParent();
-
+        auto canvas = new DrawingCanvas(docPanel, view, historyPanelHolder, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+        docPanel->GetSizer()->Add(canvas, 1, wxEXPAND);
         imageMenu.CallRotate(canvas);
         shapeMenu.AddCallBack([canvas]()
                               { canvas->ReFreshCanvas(); });
         toolMenu.AddCallBack([canvas]()
                              { canvas->ReFreshCanvas(); });
-        canvasInfoPanel.SetUpChoice([canvas, this](double scaleFactor)
-                                    { 
-                                        canvas->SetSize(wxSize(2474 * scaleFactor, 1515 * scaleFactor));
-                                        canvas->CentreOnParent();
-                                        canvas->CallScale(scaleFactor); });
+        canvasInfoPanel.SetUpChoice([canvas](double choice)
+                                    { canvas->Zoom(choice); });
 
         m_canvas = canvas;
 
@@ -138,6 +133,7 @@ void MyFrame::SetupCanvasForView(DrawingView *view)
     {
         this->SetTitle(wxGetApp().GetAppDisplayName());
     }
+    docPanel->Layout();
 }
 
 wxScrolled<wxPanel> *MyFrame::BuildControlsPanel(wxWindow *parent)
@@ -200,25 +196,15 @@ wxScrolled<wxPanel> *MyFrame::BuildControlsPanel(wxWindow *parent)
 
     imageMenu.Show(false);
     toolMenu.AddHideCallBack([this]()
-                             {  std::cout << "ToolMenu callback" << std::endl;
-                            imageMenu.Show(false); },
-                             ToolType::Brush);
-    toolMenu.AddHideCallBack([this]()
-                             {  std::cout << "ToolMenu callback" << std::endl;
-                            imageMenu.Show(false); },
-                             ToolType::Text);
-    toolMenu.AddHideCallBack([this]()
-                             {
-                            shapeMenu.Show(false);
-                            sizeMenu.Show(false); },
-                             ToolType::Transform);
+                             { imageMenu.Show(false); },
+                             (int)ToolType::Brush & (int)ToolType::Transform & (int)ToolType::Text);
     toolMenu.AddShowCallBack([this]()
                              { imageMenu.Show(true); },
-                             ToolType::Transform);
+                             (int)ToolType::Transform);
     toolMenu.AddShowCallBack([this]()
                              { shapeMenu.Show(true);
                             sizeMenu.Show(true); },
-                             ToolType::Brush);
+                             (int)ToolType::Brush);
     return controlsPanel;
 }
 
@@ -231,9 +217,10 @@ MyFrame::MyFrame(wxDocManager *manager, wxFrame *frame, wxWindowID id, const wxS
     splitter->SetMinimumPaneSize(FromDIP(150));
 
     m_controlsPanel = BuildControlsPanel(splitter);
-    docPanel = new wxScrolled<wxPanel>(docSplitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS);
+    docPanel = new wxScrolled<wxPanel>(docSplitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS | wxVSCROLL | wxHSCROLL);
     docPanel->SetSizer(new wxBoxSizer(wxVERTICAL));
     docPanel->SetBackgroundColour(wxColour(40, 40, 40));
+    docPanel->SetScrollRate(0, FromDIP(10));
 
     zoomPanel = new wxPanel(docSplitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS);
     zoomPanel->SetSizer(new wxBoxSizer(wxVERTICAL));

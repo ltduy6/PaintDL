@@ -23,6 +23,7 @@ public:
     void ReFreshCanvas();
     void RotateCommand();
     void CallScale(double scaleFactor);
+    void Zoom(double zoomFactor);
     DrawingView *GetView() const;
 
 private:
@@ -33,16 +34,21 @@ private:
     void OnMouseMove(wxMouseEvent &event);
     void OnMouseUp(wxMouseEvent &event);
     void OnMouseLeave(wxMouseEvent &event);
-    void OnScroll(wxScrollEvent &event);
+    void OnScroll(wxMouseEvent &event);
     void OnKeyDown(wxKeyEvent &event);
     void HandleEvent(wxMouseEvent &event);
     void UpdateHistoryPanel();
 
+    void CenterAfterZoom(wxPoint previousCenter, wxPoint currentCenter);
+    void SetUpVirtualSize();
+
     wxString getShapeCommandName();
+    wxRect getCanvasBound() const;
 
 private:
     DrawingView *view;
     std::reference_wrapper<HistoryPanel> m_historyPanel;
-
+    double m_zoomFactor{1};
+    wxPoint2DDouble m_lastZoomCenter{};
     bool isDragging{false};
 };

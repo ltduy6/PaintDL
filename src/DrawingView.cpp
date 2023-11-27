@@ -45,13 +45,11 @@ void DrawingView::OnChangeFilename()
 
 void DrawingView::OnDraw(wxDC *dc)
 {
-    dc->SetBackground(*wxWHITE_BRUSH);
-    dc->Clear();
-
     std::unique_ptr<wxGraphicsContext> gc{wxGraphicsContext::CreateFromUnknownDC(*dc)};
 
     if (gc)
     {
+
         for (const auto &obj : GetDocument()->objects)
         {
             obj.get().Draw(*gc);
@@ -119,6 +117,10 @@ void DrawingView::OnMouseDown(wxPoint pt)
         }
         break;
     }
+    default:
+    {
+        break;
+    }
     }
 }
 
@@ -156,6 +158,10 @@ void DrawingView::OnMouseDrag(wxPoint pt)
         }
         break;
     }
+    default:
+    {
+        break;
+    }
     }
 }
 
@@ -189,6 +195,10 @@ void DrawingView::OnMouseDragEnd()
             auto iterator = GetDocument()->objects.back();
             selectionBox = std::make_optional(SelectionBox{iterator, MyApp::GetStrokeSettings().selectionHandleWidth});
         }
+        break;
+    }
+    default:
+    {
         break;
     }
     }
@@ -254,11 +264,27 @@ void DrawingView::SetCenter(wxPoint pt)
 
 void DrawingView::SetScaleObjects(double scaleFactor, wxPoint2DDouble center)
 {
-    CanvasObject::globalScaleFactor = scaleFactor;
+}
+
+void DrawingView::SetVirtualSize(wxSize size)
+{
+    m_virtualSize = size;
+}
+
+void DrawingView::SetCanvasBound(wxRect bound)
+{
+    m_canvasBound = bound;
+}
+
+void DrawingView::SetZoomFactor(double zoomFactor, wxPoint2DDouble center)
+{
+    m_zoomFactor = zoomFactor;
+    CanvasObject::globalScaleFactor = zoomFactor;
     for (auto &obj : GetDocument()->objects)
     {
-        obj.get().SetScaleMatrix(scaleFactor, center);
+        obj.get().SetZoomMatrix(zoomFactor, center);
     }
+    shapeCreator.SetUpZoomMatrix(zoomFactor, center);
 }
 
 bool DrawingView::GetIsModified() const

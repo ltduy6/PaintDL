@@ -82,8 +82,7 @@ void SelectionBox::Draw(wxGraphicsContext &gc) const
         GetTopRightHandleCenter(),
         GetBottomLeftHandleCenter(),
         GetBottomRightHandleCenter(),
-        GetRotationHandleCenter(),
-    };
+        GetRotationHandleCenter()};
 
     for (const auto &center : handleCenters)
     {
@@ -98,26 +97,32 @@ void SelectionBox::StartDragging(wxPoint2DDouble point)
     if (HandleHitTest(point, GetRotationHandleCenter()) && m_object.get().GetCanRotate())
     {
         m_draggableElement = DraggableElement::Rotation;
+        m_object.get().SetCenter(m_object.get().GetBoundingBox().GetCentre());
     }
     else if (HandleHitTest(point, GetTopLeftHandleCenter()))
     {
         m_draggableElement = DraggableElement::TopLeft;
+        m_object.get().SetCenter(m_object.get().GetBoundingBox().GetRightBottom());
     }
     else if (HandleHitTest(point, GetTopRightHandleCenter()))
     {
         m_draggableElement = DraggableElement::TopRight;
+        m_object.get().SetCenter(m_object.get().GetBoundingBox().GetLeftBottom());
     }
     else if (HandleHitTest(point, GetBottomLeftHandleCenter()))
     {
         m_draggableElement = DraggableElement::BottomLeft;
+        m_object.get().SetCenter(m_object.get().GetBoundingBox().GetRightTop());
     }
     else if (HandleHitTest(point, GetBottomRightHandleCenter()))
     {
         m_draggableElement = DraggableElement::BottomRight;
+        m_object.get().SetCenter(m_object.get().GetBoundingBox().GetLeftTop());
     }
     else if (FullBoxHitTest(point))
     {
         m_draggableElement = DraggableElement::FullBox;
+        m_object.get().SetCenter(m_object.get().GetBoundingBox().GetCentre());
     }
     else
     {
@@ -150,21 +155,27 @@ void SelectionBox::Drag(wxPoint2DDouble pt)
     switch (m_draggableElement.value())
     {
     case DraggableElement::TopLeft:
+        m_object.get().SetCenter(m_object.get().GetBoundingBox().GetRightBottom());
         ScaleUsingHandleMovement(m_lastDragPoint, pt, GetTopLeftHandleCenter());
         break;
     case DraggableElement::TopRight:
+        m_object.get().SetCenter(m_object.get().GetBoundingBox().GetLeftBottom());
         ScaleUsingHandleMovement(m_lastDragPoint, pt, GetTopRightHandleCenter());
         break;
     case DraggableElement::BottomLeft:
+        m_object.get().SetCenter(m_object.get().GetBoundingBox().GetRightTop());
         ScaleUsingHandleMovement(m_lastDragPoint, pt, GetBottomLeftHandleCenter());
         break;
     case DraggableElement::BottomRight:
+        m_object.get().SetCenter(m_object.get().GetBoundingBox().GetLeftTop());
         ScaleUsingHandleMovement(m_lastDragPoint, pt, GetBottomRightHandleCenter());
         break;
     case DraggableElement::Rotation:
+        m_object.get().SetCenter(m_object.get().GetBoundingBox().GetCentre());
         RotateUsingHandleMovement(m_lastDragPoint, pt);
         break;
     case DraggableElement::FullBox:
+        m_object.get().SetCenter(m_object.get().GetBoundingBox().GetCentre());
         TranslateUsingHandleMovement(m_lastDragPoint, pt);
         break;
     default:
@@ -182,6 +193,7 @@ void SelectionBox::FinishDragging()
 void SelectionBox::PredefinedRotate(double angle)
 {
     m_oldTransformation = m_object.get().GetTransformation();
+    m_object.get().SetCenter(m_object.get().GetBoundingBox().GetCentre());
     m_object.get().UpdateRotationAngle(angle);
 }
 
@@ -218,6 +230,16 @@ wxPoint2DDouble SelectionBox::GetBottomLeftHandleCenter() const
 wxPoint2DDouble SelectionBox::GetBottomRightHandleCenter() const
 {
     return ObjectSpace::ToScreenCoordinates(m_object.get(), m_object.get().GetBoundingBox().GetRightBottom());
+}
+
+wxPoint2DDouble SelectionBox::GetCenter() const
+{
+    return ObjectSpace::ToScreenCoordinates(m_object.get(), m_object.get().GetBoundingBox().GetCentre());
+}
+
+wxPoint2DDouble SelectionBox::GetOldCenter() const
+{
+    return ObjectSpace::ToScreenCoordinates(m_object.get(), m_object.get().GetOldCenter());
 }
 
 void SelectionBox::DrawHandle(wxGraphicsContext &gc, wxPoint2DDouble center) const
@@ -258,7 +280,7 @@ void SelectionBox::ScaleUsingHandleMovement(wxPoint2DDouble dragStart, wxPoint2D
     const auto directionFromCenter = ObjectSpace::ToObjectCoordinates(m_object.get(), handleCenter) - m_object.get().GetCenter();
     const auto dragInObjectSpace = ObjectSpace::ToObjectDistance(m_object.get(), dragEnd - dragStart);
 
-    const auto [halfBoxWidth, halfBoxHeight] = m_object.get().GetBoundingBox().GetSize() / 2;
+    const auto [halfBoxWidth, halfBoxHeight] = m_object.get().GetBoundingBox().GetSize();
     const auto halfWidthAdjusment = directionFromCenter.m_x > 0 ? dragInObjectSpace.m_x : -dragInObjectSpace.m_x;
     const auto halfHeightAdjusment = directionFromCenter.m_y > 0 ? dragInObjectSpace.m_y : -dragInObjectSpace.m_y;
 
@@ -267,7 +289,7 @@ void SelectionBox::ScaleUsingHandleMovement(wxPoint2DDouble dragStart, wxPoint2D
 
 void SelectionBox::RotateUsingHandleMovement(wxPoint2DDouble dragStart, wxPoint2DDouble dragEnd)
 {
-    const auto objectCenterOnScreen = ObjectSpace::ToScreenCoordinates(m_object.get(), m_object.get().GetBoundingBox().GetCentre());
+    const auto objectCenterOnScreen = ObjectSpace::ToScreenCoordinates(m_object.get(), m_object.get().GetCenter());
 
     const auto v1 = dragStart - objectCenterOnScreen;
     const auto v2 = dragEnd - objectCenterOnScreen;
@@ -281,6 +303,6 @@ void SelectionBox::RotateUsingHandleMovement(wxPoint2DDouble dragStart, wxPoint2
 
 void SelectionBox::TranslateUsingHandleMovement(wxPoint2DDouble dragStart, wxPoint2DDouble dragEnd)
 {
-    const auto dragVector = dragEnd - dragStart;
+    auto dragVector = ObjectSpace::ToObjectDistance(m_object.get(), dragEnd - dragStart);
     m_object.get().UpdateTranslation(dragVector.m_x, dragVector.m_y);
 }

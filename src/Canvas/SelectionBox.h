@@ -28,6 +28,8 @@ private:
     wxPoint2DDouble GetTopRightHandleCenter() const;
     wxPoint2DDouble GetBottomLeftHandleCenter() const;
     wxPoint2DDouble GetBottomRightHandleCenter() const;
+    wxPoint2DDouble GetCenter() const;
+    wxPoint2DDouble GetOldCenter() const;
     // wxPoint2DDouble GetMidTopHandleCenter() const;
     // wxPoint2DDouble GetMidBottomHandleCenter() const;
     // wxPoint2DDouble GetMidLeftHandleCenter() const;

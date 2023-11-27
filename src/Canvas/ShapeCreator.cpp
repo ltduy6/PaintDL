@@ -1,27 +1,36 @@
 #include "ShapeCreator.h"
+#include "CanvasObject.h"
 
-void ShapeCreator::Start(StrokeSettings strokeSettings, wxPoint point)
+void ShapeCreator::Start(StrokeSettings strokeSettings, wxPoint2DDouble point)
 {
+    wxAffineMatrix2D *matrix = new wxAffineMatrix2D(m_zoomMatrix);
+    matrix->Invert();
+    point = matrix->TransformPoint(point);
     shape.emplace(ShapeFactory::CreateShape(strokeSettings, point));
     lastDragStart = point;
+    delete matrix;
 }
 
-void ShapeCreator::Update(wxPoint pt)
+void ShapeCreator::Update(wxPoint2DDouble pt)
 {
     if (!shape)
     {
         throw std::runtime_error("ShapeCreator::Update() called without Start()");
     }
+
+    wxAffineMatrix2D *matrix = new wxAffineMatrix2D(m_zoomMatrix);
+    matrix->Invert();
+    pt = matrix->TransformPoint(pt);
     std::visit(Visitor{[&](Path &path)
                        {
                            path.points.push_back(pt);
                        },
                        [&](Rect &rect)
                        {
-                           auto left = std::min(lastDragStart.x, pt.x);
-                           auto right = std::max(lastDragStart.x, pt.x);
-                           auto top = std::min(lastDragStart.y, pt.y);
-                           auto bottom = std::max(lastDragStart.y, pt.y);
+                           auto left = std::min(lastDragStart.m_x, pt.m_x);
+                           auto right = std::max(lastDragStart.m_x, pt.m_x);
+                           auto top = std::min(lastDragStart.m_y, pt.m_y);
+                           auto bottom = std::max(lastDragStart.m_y, pt.m_y);
 
                            rect.rect.SetLeft(left);
                            rect.rect.SetRight(right);
@@ -30,10 +39,10 @@ void ShapeCreator::Update(wxPoint pt)
                        },
                        [&](Circle &circle)
                        {
-                           auto left = std::min(lastDragStart.x, pt.x);
-                           auto right = std::max(lastDragStart.x, pt.x);
-                           auto top = std::min(lastDragStart.y, pt.y);
-                           auto bottom = std::max(lastDragStart.y, pt.y);
+                           auto left = std::min(lastDragStart.m_x, pt.m_x);
+                           auto right = std::max(lastDragStart.m_x, pt.m_x);
+                           auto top = std::min(lastDragStart.m_y, pt.m_y);
+                           auto bottom = std::max(lastDragStart.m_y, pt.m_y);
 
                            circle.rect.SetLeft(left);
                            circle.rect.SetRight(right);
@@ -42,10 +51,10 @@ void ShapeCreator::Update(wxPoint pt)
                        },
                        [&](ITriangle &triangle)
                        {
-                           auto left = std::min(lastDragStart.x, pt.x);
-                           auto right = std::max(lastDragStart.x, pt.x);
-                           auto top = std::min(lastDragStart.y, pt.y);
-                           auto bottom = std::max(lastDragStart.y, pt.y);
+                           auto left = std::min(lastDragStart.m_x, pt.m_x);
+                           auto right = std::max(lastDragStart.m_x, pt.m_x);
+                           auto top = std::min(lastDragStart.m_y, pt.m_y);
+                           auto bottom = std::max(lastDragStart.m_y, pt.m_y);
 
                            triangle.rect.SetLeft(left);
                            triangle.rect.SetRight(right);
@@ -54,10 +63,10 @@ void ShapeCreator::Update(wxPoint pt)
                        },
                        [&](RTriangle &triangle)
                        {
-                           auto left = std::min(lastDragStart.x, pt.x);
-                           auto right = std::max(lastDragStart.x, pt.x);
-                           auto top = std::min(lastDragStart.y, pt.y);
-                           auto bottom = std::max(lastDragStart.y, pt.y);
+                           auto left = std::min(lastDragStart.m_x, pt.m_x);
+                           auto right = std::max(lastDragStart.m_x, pt.m_x);
+                           auto top = std::min(lastDragStart.m_y, pt.m_y);
+                           auto bottom = std::max(lastDragStart.m_y, pt.m_y);
 
                            triangle.rect.SetLeft(left);
                            triangle.rect.SetRight(right);
@@ -66,10 +75,10 @@ void ShapeCreator::Update(wxPoint pt)
                        },
                        [&](Diamond &diamond)
                        {
-                           auto left = std::min(lastDragStart.x, pt.x);
-                           auto right = std::max(lastDragStart.x, pt.x);
-                           auto top = std::min(lastDragStart.y, pt.y);
-                           auto bottom = std::max(lastDragStart.y, pt.y);
+                           auto left = std::min(lastDragStart.m_x, pt.m_x);
+                           auto right = std::max(lastDragStart.m_x, pt.m_x);
+                           auto top = std::min(lastDragStart.m_y, pt.m_y);
+                           auto bottom = std::max(lastDragStart.m_y, pt.m_y);
 
                            diamond.rect.SetLeft(left);
                            diamond.rect.SetRight(right);
@@ -78,10 +87,10 @@ void ShapeCreator::Update(wxPoint pt)
                        },
                        [&](Text &text)
                        {
-                           auto left = std::min(lastDragStart.x, pt.x);
-                           auto right = std::max(lastDragStart.x, pt.x);
-                           auto top = std::min(lastDragStart.y, pt.y);
-                           auto bottom = std::max(lastDragStart.y, pt.y);
+                           auto left = std::min(lastDragStart.m_x, pt.m_x);
+                           auto right = std::max(lastDragStart.m_x, pt.m_x);
+                           auto top = std::min(lastDragStart.m_y, pt.m_y);
+                           auto bottom = std::max(lastDragStart.m_y, pt.m_y);
 
                            text.rect.SetLeft(left);
                            text.rect.SetRight(right);
@@ -89,6 +98,8 @@ void ShapeCreator::Update(wxPoint pt)
                            text.rect.SetBottom(bottom);
                        }},
                shape.value());
+
+    delete matrix;
 }
 
 void ShapeCreator::UpdateKey(wxChar key)
@@ -122,7 +133,7 @@ CanvasObject ShapeCreator::FinishAndGenerateObject()
     {
         throw std::runtime_error("ShapeCreator::FinishAndGenerateObject() called without Start()");
     }
-    return CanvasObject{std::exchange(shape, {}).value()};
+    return CanvasObject{std::exchange(shape, {}).value(), {}, m_zoomMatrix};
 }
 
 CanvasObject ShapeCreator::GenerateTextObject()
@@ -146,6 +157,20 @@ void ShapeCreator::Draw(wxGraphicsContext &gc)
     {
         return;
     }
+    gc.PushState();
+    gc.SetTransform(gc.CreateMatrix(m_zoomMatrix));
+    wxAffineMatrix2D *matrix = new wxAffineMatrix2D();
+    std::visit(DrawingVisitor{gc, matrix, nullptr, nullptr}, shape.value());
+    delete matrix;
+    gc.PopState();
+}
 
-    std::visit(DrawingVisitor{gc, nullptr, nullptr, nullptr}, shape.value());
+void ShapeCreator::SetUpZoomMatrix(double scaleFactor, wxPoint2DDouble center)
+{
+    wxAffineMatrix2D *newMatrix = new wxAffineMatrix2D();
+    newMatrix->Translate(center.m_x, center.m_y);
+    newMatrix->Scale(scaleFactor, scaleFactor);
+    newMatrix->Translate(-center.m_x, -center.m_y);
+    m_zoomMatrix = *newMatrix;
+    delete newMatrix;
 }

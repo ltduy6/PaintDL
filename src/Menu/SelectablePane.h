@@ -8,7 +8,7 @@
 #include <wx/dc.h>
 #include <wx/dcgraph.h>
 
-class SelectablePane : public wxWindow 
+class SelectablePane : public wxWindow
 {
 public:
     SelectablePane(wxWindow *parent, wxWindowID id = wxID_ANY, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize);

@@ -41,11 +41,12 @@ void ToolMenu::AddCallBack(std::function<void()> callBack)
     }
 }
 
-void ToolMenu::AddShowCallBack(std::function<void()> callBack, ToolType type)
+void ToolMenu::AddShowCallBack(std::function<void()> callBack, int type)
 {
     for (const auto &toolPane : toolPanes)
     {
-        if (toolPane->getToolType() == type)
+        int toolType = (int)toolPane->getToolType();
+        if ((int)(~toolType & type) == 0)
         {
             toolPane->AddCallback(callBack);
             break;
@@ -53,11 +54,12 @@ void ToolMenu::AddShowCallBack(std::function<void()> callBack, ToolType type)
     }
 }
 
-void ToolMenu::AddHideCallBack(std::function<void()> callBack, ToolType type)
+void ToolMenu::AddHideCallBack(std::function<void()> callBack, int type)
 {
     for (const auto &toolPane : toolPanes)
     {
-        if (toolPane->getToolType() == type)
+        int toolType = (int)toolPane->getToolType();
+        if ((int)(~toolType & type) == 0)
         {
             toolPane->AddCallback(callBack);
             break;

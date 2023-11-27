@@ -27,6 +27,9 @@ public:
     void ResetModified();
     void SetCenter(wxPoint);
     void SetScaleObjects(double scaleFactor, wxPoint2DDouble center);
+    void SetVirtualSize(wxSize size);
+    void SetCanvasBound(wxRect bound);
+    void SetZoomFactor(double zoomFactor, wxPoint2DDouble center);
 
     bool GetIsModified() const;
     bool GetIsSelected() const;
@@ -47,6 +50,9 @@ private:
 private:
     wxPoint lastDragStart{};
     wxPoint screenCenter{};
+    wxSize m_virtualSize{};
+    wxRect m_canvasBound{};
+    double m_zoomFactor{1};
     ShapeCreator shapeCreator{};
     std::optional<SelectionBox> selectionBox{};
     bool isModified{false};

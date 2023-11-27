@@ -27,10 +27,10 @@ wxPoint2DDouble ObjectSpace::ToScreenDistance(const CanvasObject &object, wxPoin
 
 wxAffineMatrix2D ObjectSpace::GetTransformationMatrix(const CanvasObject &object)
 {
-    return TransformWxConversion::GetMatrix(object.GetTransformation(), object.GetOldCenter(), object.GetBoundingBox().GetCentre(), object.GetCenter());
+    return object.GetTransformationMatrix();
 }
 
 wxAffineMatrix2D ObjectSpace::GetInverseTransformationMatrix(const CanvasObject &object)
 {
-    return TransformWxConversion::GetInverseMatrix(object.GetTransformation(), object.GetOldCenter(), object.GetBoundingBox().GetCentre(), object.GetCenter());
+    return object.GetInverseTransformationMatrix();
 }

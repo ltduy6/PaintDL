@@ -3,19 +3,22 @@
 
 double CanvasObject::globalScaleFactor = 1;
 
-CanvasObject::CanvasObject(const Shape &shape, Transformation transformation)
-    : m_shape(shape), m_transformation(transformation), m_boundingBox{ShapeUltils::CalculateBoundingBox(shape)}
+CanvasObject::CanvasObject(const Shape &shape, Transformation transformation, wxAffineMatrix2D matrix)
+    : m_shape(shape), m_transformation(transformation), m_boundingBox{ShapeUltils::CalculateBoundingBox(shape)},
+      m_zoomMatrix(matrix), currentZoomFactor(globalScaleFactor)
 {
     m_center = m_boundingBox.GetCentre();
-    initialScaleFactor = globalScaleFactor;
+    // m_scaleMatrix = matrix;
+    // m_scaleMatrix.Invert();
+    // GenerateTransformationMatrix();
 }
 
 void CanvasObject::Draw(wxGraphicsContext &gc)
 {
     gc.PushState();
 
-    gc.SetTransform(gc.CreateMatrix(m_scaleMatrix));
-    wxAffineMatrix2D *matrix = new wxAffineMatrix2D(ObjectSpace::GetTransformationMatrix(*this));
+    gc.SetTransform(gc.CreateMatrix(m_zoomMatrix));
+    wxAffineMatrix2D *matrix = new wxAffineMatrix2D(m_transformationMatrix);
     wxDouble *angle = new wxDouble(m_transformation.rotationAngle);
     std::visit(DrawingVisitor{gc, matrix, &m_boundingBox, angle}, m_shape);
     delete matrix;
@@ -24,13 +27,14 @@ void CanvasObject::Draw(wxGraphicsContext &gc)
     gc.PopState();
 }
 
-void CanvasObject::SetScaleMatrix(double scaleFactor, wxPoint2DDouble center)
+void CanvasObject::SetZoomMatrix(double scaleFactor, wxPoint2DDouble center)
 {
-    std::cout << globalScaleFactor / initialScaleFactor << std::endl;
-    std::cout << center.m_x << " " << center.m_y << std::endl;
+    // center = ObjectSpace::ToObjectCoordinates(*this, center);
     wxAffineMatrix2D *newMatrix = new wxAffineMatrix2D();
-    newMatrix->Scale(globalScaleFactor / initialScaleFactor, globalScaleFactor / initialScaleFactor);
-    m_scaleMatrix = *newMatrix;
+    newMatrix->Translate(center.m_x, center.m_y);
+    newMatrix->Scale(scaleFactor, scaleFactor);
+    newMatrix->Translate(-center.m_x, -center.m_y);
+    m_zoomMatrix = *newMatrix;
     delete newMatrix;
 }
 
@@ -59,9 +63,19 @@ wxPoint2DDouble CanvasObject::GetOldCenter() const
     return m_oldCenter;
 }
 
-wxAffineMatrix2D CanvasObject::GetLastTransformationMatrix() const
+wxAffineMatrix2D CanvasObject::GetTransformationMatrix() const
 {
-    return m_lastTransformationMatrix;
+    wxAffineMatrix2D matrix = m_zoomMatrix;
+    matrix.Concat(m_transformationMatrix);
+    return matrix;
+}
+
+wxAffineMatrix2D CanvasObject::GetInverseTransformationMatrix() const
+{
+    wxAffineMatrix2D matrix = m_zoomMatrix;
+    matrix.Concat(m_transformationMatrix);
+    matrix.Invert();
+    return matrix;
 }
 
 bool CanvasObject::operator==(const CanvasObject &other) const
@@ -79,22 +93,52 @@ void CanvasObject::UpdateScaleFactor(double scaleX, double scaleY)
 {
     m_transformation.scaleX *= scaleX;
     m_transformation.scaleY *= scaleY;
+
+    wxAffineMatrix2D *newMatrix = new wxAffineMatrix2D();
+
+    newMatrix->Translate(m_center.m_x, m_center.m_y);
+    newMatrix->Scale(scaleX, scaleY);
+    newMatrix->Translate(-m_center.m_x, -m_center.m_y);
+
+    m_scaleMatrix.Concat(*newMatrix);
+    delete newMatrix;
+
+    GenerateTransformationMatrix();
 }
 
 void CanvasObject::UpdateRotationAngle(double angle)
 {
     m_transformation.rotationAngle += angle;
+
+    wxAffineMatrix2D *newMatrix = new wxAffineMatrix2D();
+    newMatrix->Translate(m_center.m_x, m_center.m_y);
+    newMatrix->Rotate(angle);
+    newMatrix->Translate(-m_center.m_x, -m_center.m_y);
+
+    newMatrix->Concat(m_rotationMatrix);
+    m_rotationMatrix = *newMatrix;
+    delete newMatrix;
+
+    GenerateTransformationMatrix();
 }
 
 void CanvasObject::UpdateTranslation(double translationX, double translationY)
 {
     m_transformation.translationX += translationX;
     m_transformation.translationY += translationY;
+
+    wxAffineMatrix2D *newMatrix = new wxAffineMatrix2D();
+    newMatrix->Translate(translationX / globalScaleFactor, translationY / globalScaleFactor);
+
+    m_translationMatrix.Concat(*newMatrix);
+    delete newMatrix;
+
+    GenerateTransformationMatrix();
 }
 
 void CanvasObject::UpdateMatrix(wxAffineMatrix2D matrix)
 {
-    m_lastTransformationMatrix = matrix;
+    m_transformationMatrix = matrix;
 }
 
 void CanvasObject::SetScaleFactor(double scaleX, double scaleY)
@@ -128,4 +172,14 @@ void CanvasObject::SetCanRotate(bool canRotate)
 void CanvasObject::IncreaseHeight(double height)
 {
     m_boundingBox.m_height = height;
+}
+
+void CanvasObject::GenerateTransformationMatrix()
+{
+    wxAffineMatrix2D *newMatrix = new wxAffineMatrix2D();
+    newMatrix->Concat(m_translationMatrix);
+    newMatrix->Concat(m_rotationMatrix);
+    newMatrix->Concat(m_scaleMatrix);
+    m_transformationMatrix = *newMatrix;
+    delete newMatrix;
 }

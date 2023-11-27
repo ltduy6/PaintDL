@@ -18,6 +18,7 @@ DrawingCanvas::DrawingCanvas(wxWindow *parent, DrawingView *view, HistoryPanel &
     this->Bind(wxEVT_LEFT_UP, &DrawingCanvas::OnMouseUp, this);
     this->Bind(wxEVT_LEAVE_WINDOW, &DrawingCanvas::OnMouseLeave, this);
     view->Bind(wxEVT_CHAR_HOOK, &DrawingCanvas::OnKeyDown, this);
+    this->Bind(wxEVT_MOUSEWHEEL, &DrawingCanvas::OnScroll, this);
 }
 
 void DrawingCanvas::ShowExportDialog()
@@ -73,6 +74,13 @@ void DrawingCanvas::CallScale(double scaleFactor)
         view->SetScaleObjects(scaleFactor, wxPoint2DDouble(this->GetParent()->GetClientSize().x / 2, this->GetParent()->GetClientSize().y / 2));
         Refresh();
     }
+}
+
+void DrawingCanvas::Zoom(double zoomFactor)
+{
+    view->SetZoomFactor(zoomFactor, wxPoint2DDouble(this->GetParent()->GetClientSize().x / 2, this->GetParent()->GetClientSize().y / 2));
+
+    Refresh();
 }
 
 DrawingView *DrawingCanvas::GetView() const
@@ -140,9 +148,24 @@ void DrawingCanvas::OnMouseLeave(wxMouseEvent &event)
     }
 }
 
-void DrawingCanvas::OnScroll(wxScrollEvent &event)
+void DrawingCanvas::OnScroll(wxMouseEvent &event)
 {
-    std::cout << "Yes\n";
+    if (MyApp::GetStrokeSettings().currentTool == ToolType::ZoomIn)
+    {
+        m_zoomFactor += event.GetWheelRotation() / event.GetWheelDelta();
+        if (m_zoomFactor < 1)
+        {
+            m_zoomFactor = 1;
+            return;
+        }
+        if (event.GetWheelRotation() > 0)
+        {
+            view->SetZoomFactor(m_zoomFactor, event.GetPosition());
+            m_lastZoomCenter = event.GetPosition();
+        }
+        else
+            view->SetZoomFactor(m_zoomFactor, m_lastZoomCenter);
+    }
     Refresh();
 }
 
@@ -178,6 +201,18 @@ void DrawingCanvas::UpdateHistoryPanel()
 {
 }
 
+void DrawingCanvas::CenterAfterZoom(wxPoint previousCenter, wxPoint currentCenter)
+{
+}
+
+void DrawingCanvas::SetUpVirtualSize()
+{
+    auto virtualSize = getCanvasBound().GetSize() * m_zoomFactor;
+    virtualSize.IncBy(getCanvasBound().GetPosition() * 2 * m_zoomFactor);
+
+    SetVirtualSize(virtualSize);
+}
+
 wxString DrawingCanvas::getShapeCommandName()
 {
     if (MyApp::GetStrokeSettings().currentTool == ToolType::Brush)
@@ -201,15 +236,19 @@ wxString DrawingCanvas::getShapeCommandName()
     }
 }
 
+wxRect DrawingCanvas::getCanvasBound() const
+{
+    return wxRect(FromDIP(50), FromDIP(50), FromDIP(2000), FromDIP(1000));
+}
+
 void DrawingCanvas::OnPaint(wxPaintEvent &event)
 {
     wxAutoBufferedPaintDC dc(this);
+    dc.SetBackground(*wxWHITE_BRUSH);
+    dc.Clear();
 
     if (view)
     {
-        wxDouble x = GetClientSize().x / 2;
-        wxDouble y = GetClientSize().y / 2;
-        view->SetCenter(wxPoint(x, y));
         view->OnDraw(&dc);
     }
 }

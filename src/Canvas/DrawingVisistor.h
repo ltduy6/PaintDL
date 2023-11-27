@@ -42,21 +42,14 @@ struct DrawingVisitor
         if (path.points.size() > 1)
         {
             gc.SetPen(wxPen(path.color, path.width));
-            if (!matrix)
+            int n = path.points.size();
+            wxPoint2DDouble *points = new wxPoint2DDouble[n];
+            for (int i = 0; i < path.points.size(); i++)
             {
-                gc.StrokeLines(path.points.size(), path.points.data());
+                points[i] = matrix->TransformPoint(path.points[i]);
             }
-            else
-            {
-                int n = path.points.size();
-                wxPoint2DDouble *points = new wxPoint2DDouble[n];
-                for (int i = 0; i < path.points.size(); i++)
-                {
-                    points[i] = matrix->TransformPoint(path.points[i]);
-                }
-                gc.StrokeLines(path.points.size(), points);
-                delete[] points;
-            }
+            gc.StrokeLines(path.points.size(), points);
+            delete[] points;
         }
     }
 

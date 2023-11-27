@@ -13,4 +13,5 @@ public:
 private:
     virtual void DrawContent(wxGraphicsContext *gc, const wxRect &rect, int roundness) const override;
     ToolType m_type;
+    wxBitmap m_bitmap;
 };

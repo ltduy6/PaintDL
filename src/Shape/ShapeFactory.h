@@ -6,7 +6,7 @@
 
 struct ShapeFactory
 {
-    static Shape CreateShape(const StrokeSettings &settings, wxPoint origin)
+    static Shape CreateShape(const StrokeSettings &settings, wxPoint2DDouble origin)
     {
         wxPoint2DDouble origin2D{origin};
         switch (settings.currentShape)
