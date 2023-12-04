@@ -35,6 +35,11 @@ ToolsPane::ToolsPane(wxWindow *parent, wxWindowID id, ToolType type, const wxPoi
         m_bitmap.LoadFile("src/Assets/zoom-in.png", wxBITMAP_TYPE_PNG);
         break;
     }
+    case ToolType::Shape:
+    {
+        m_bitmap.LoadFile("src/Assets/shapes.png", wxBITMAP_TYPE_PNG);
+        break;
+    }
     default:
         break;
     }

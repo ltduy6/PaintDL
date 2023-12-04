@@ -34,3 +34,8 @@ wxAffineMatrix2D ObjectSpace::GetInverseTransformationMatrix(const CanvasObject 
 {
     return object.GetInverseTransformationMatrix();
 }
+
+wxAffineMatrix2D ObjectSpace::GetTempTransformationMatrix(const CanvasObject &object)
+{
+    return TransformWxConversion::GetMatrix(object.GetTransformation(), object.GetBoundingBox().GetCentre(), object.GetBoundingBox().GetCentre());
+}

@@ -9,7 +9,7 @@
 class ShapeMenu : public MenuTemplate
 {
 public:
-    void SetUpShapeMenu(wxWindow *parent, wxSizer *sizer, wxStaticText *text, std::function<void()> reset);
+    void SetUpShapeMenu(wxWindow *parent, wxSizer *sizer);
     void SelectShapePane();
     void AddCallBack(std::function<void()> callBack);
 

@@ -3,16 +3,16 @@
 #include "ColorPane.h"
 #include "ToolsPane.h"
 #include "../MyApp.h"
+#include "MenuTemplate.h"
 
 #include <wx/wx.h>
-#include <wx/wrapsizer.h>
 #include <wx/splitter.h>
 #include <wx/colordlg.h>
 
-class ColorMenu
+class ColorMenu : public MenuTemplate
 {
 public:
-    void SetUpColorMenu(wxWindow *parent, wxSizer *size, wxFrame *frame);
+    void SetUpColorMenu(wxWindow *parent, wxSizer *sizer, int numColorPanes = 11, std::string label = "Color");
 
 private:
     void SelectColorPane(ColorPane *pane);

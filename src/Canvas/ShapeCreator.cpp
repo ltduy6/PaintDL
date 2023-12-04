@@ -160,7 +160,7 @@ void ShapeCreator::Draw(wxGraphicsContext &gc)
     gc.PushState();
     gc.SetTransform(gc.CreateMatrix(m_zoomMatrix));
     wxAffineMatrix2D *matrix = new wxAffineMatrix2D();
-    std::visit(DrawingVisitor{gc, matrix, nullptr, nullptr}, shape.value());
+    std::visit(DrawingVisitor{gc, matrix, nullptr}, shape.value());
     delete matrix;
     gc.PopState();
 }
@@ -171,6 +171,7 @@ void ShapeCreator::SetUpZoomMatrix(double scaleFactor, wxPoint2DDouble center)
     newMatrix->Translate(center.m_x, center.m_y);
     newMatrix->Scale(scaleFactor, scaleFactor);
     newMatrix->Translate(-center.m_x, -center.m_y);
+    newMatrix->Concat(m_zoomMatrix);
     m_zoomMatrix = *newMatrix;
     delete newMatrix;
 }

@@ -13,6 +13,7 @@ public:
     bool OnCreate(wxDocument *doc, long flags) override;
 
     void OnDraw(wxDC *dc) override;
+    void SetExporting(bool isExporting);
 
     void OnMouseDown(wxPoint);
     void OnMouseDrag(wxPoint);
@@ -56,4 +57,5 @@ private:
     ShapeCreator shapeCreator{};
     std::optional<SelectionBox> selectionBox{};
     bool isModified{false};
+    bool isExporting{false};
 };

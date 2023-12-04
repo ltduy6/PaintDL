@@ -15,7 +15,6 @@ struct DrawingVisitor
     wxGraphicsContext &gc;
     wxAffineMatrix2D *matrix;
     wxRect2DDouble *boundingBox;
-    wxDouble *angle;
 
     void operator()(const Rect &rect)
     {

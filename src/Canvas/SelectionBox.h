@@ -13,7 +13,7 @@ public:
     Transformation GetTransformation() const;
     CanvasObject &GetObject();
     void UpdateKey(wxChar key, bool isDelete = false);
-    void Draw(wxGraphicsContext &gc) const;
+    void Draw(wxGraphicsContext &gc, bool isExporting = false) const;
     void StartDragging(wxPoint2DDouble point);
     bool isDragging() const;
     bool isCanRotate() const;

@@ -1,21 +1,33 @@
 #include "ColorMenu.h"
 
-void ColorMenu::SetUpColorMenu(wxWindow *parent, wxSizer *sizer, wxFrame *frame)
+void ColorMenu::SetUpColorMenu(wxWindow *parent, wxSizer *sizer, int numColorPanes, std::string label)
 {
-    for (const auto &color : niceColors)
+    auto m_label = new wxStaticText(parent, wxID_ANY, label);
+    m_label->SetForegroundColour(wxColour(231, 246, 242));
+    sizer->Add(m_label, 0, wxALL, parent->FromDIP(5));
+
+    auto wrapSizer = new wxWrapSizer(wxHORIZONTAL);
+    for (int i = 0; i < numColorPanes; ++i)
     {
+        auto color = wxColour(niceColors[i]);
         auto colorPane = new ColorPane(parent, wxID_ANY, wxColour(color));
         colorPane->AddCallback([this, colorPane]()
                                { SelectColorPane(colorPane); });
         colorPanes.push_back(colorPane);
-        sizer->Add(colorPane, 0, wxRIGHT | wxBOTTOM, frame->FromDIP(5));
+        wrapSizer->Add(colorPane, 0, wxRIGHT | wxBOTTOM, parent->FromDIP(5));
     }
     auto customColor = new ToolsPane(parent, wxID_ANY, ToolType::CustomColor);
-    customColor->AddCallback([this, frame]()
-                             { SelectCustomColor(frame); });
-    sizer->Add(customColor, 0, wxRIGHT | wxBOTTOM, frame->FromDIP(5));
+    customColor->AddCallback([this, parent]()
+                             { SelectCustomColor(parent); });
+    wrapSizer->Add(customColor, 0, wxRIGHT | wxBOTTOM, parent->FromDIP(5));
 
     SelectColorPane(colorPanes[0]);
+
+    sizer->Add(wrapSizer, 0, wxALL, parent->FromDIP(5));
+
+    m_parent = parent;
+    m_sizer = wrapSizer;
+    m_text = m_label;
 }
 
 void ColorMenu::SelectColorPane(ColorPane *pane)

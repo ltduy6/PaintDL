@@ -4,17 +4,13 @@ void MenuTemplate::Show(bool show)
 {
     if (show)
     {
-        for (auto &item : m_sizer->GetChildren())
-        {
-            item->GetWindow()->Enable();
-        }
+        m_parent->GetSizer()->Show(m_sizer);
+        m_parent->GetSizer()->Show(m_text);
     }
     else
     {
-        for (auto &item : m_sizer->GetChildren())
-        {
-            item->GetWindow()->Disable();
-        }
+        m_parent->GetSizer()->Hide(m_sizer);
+        m_parent->GetSizer()->Hide(m_text);
     }
     m_parent->Layout();
 }

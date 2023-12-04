@@ -8,14 +8,17 @@
 class ToolMenu
 {
 public:
-    void SetUpToolMenu(wxWindow *parent, wxSizer *sizer, std::function<void()> reset);
-    void SelectToolPane();
-    void AddCallBack(std::function<void()> callBack);
-    void AddShowCallBack(std::function<void()> callBack, int type);
-    void AddHideCallBack(std::function<void()> callBack, int type);
+    ToolMenu(wxWindow *parent, wxSizer *sizer, ToolType type);
+    void Show(bool show);
+    virtual ~ToolMenu() = default;
+    void SetCallback(std::function<void()> callback);
+
+protected:
+    virtual void ShowMenu(bool show) = 0;
+
+public:
+    ToolType type;
 
 private:
-    std::vector<ToolsPane *> toolPanes;
-    std::vector<std::function<void()>> callBacks;
-    const std::vector<ToolType> toolTypes = {ToolType::Brush, ToolType::Transform, ToolType::Text, ToolType::ZoomIn};
+    ToolsPane *mainToolPane;
 };

@@ -9,7 +9,7 @@
 class ImageMenu : public MenuTemplate
 {
 public:
-    void SetUpImageMenu(wxWindow *parent, wxSizer *sizer, wxStaticText *text);
+    void SetUpImageMenu(wxWindow *parent, wxSizer *sizer);
     void CallRotate(DrawingCanvas *canvas);
     ToolsPane *GetRotatePane() const;
 

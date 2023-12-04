@@ -40,7 +40,9 @@ void DrawingCanvas::ShowExportDialog()
         memDC.SetUserScale(this->GetContentScaleFactor(), this->GetContentScaleFactor());
         memDC.SelectObject(bitmap);
 
+        view->SetExporting(true);
         view->OnDraw(&memDC);
+        view->SetExporting(false);
 
         bitmap.SaveFile(exportFileDialog.GetPath(), wxBITMAP_TYPE_PNG);
         bitmap.SaveFile(exportFileDialog.GetPath(), wxBITMAP_TYPE_JPEG);
@@ -67,15 +69,6 @@ void DrawingCanvas::RotateCommand()
     }
 }
 
-void DrawingCanvas::CallScale(double scaleFactor)
-{
-    if (view)
-    {
-        view->SetScaleObjects(scaleFactor, wxPoint2DDouble(this->GetParent()->GetClientSize().x / 2, this->GetParent()->GetClientSize().y / 2));
-        Refresh();
-    }
-}
-
 void DrawingCanvas::Zoom(double zoomFactor)
 {
     view->SetZoomFactor(zoomFactor, wxPoint2DDouble(this->GetParent()->GetClientSize().x / 2, this->GetParent()->GetClientSize().y / 2));
@@ -90,14 +83,17 @@ DrawingView *DrawingCanvas::GetView() const
 
 void DrawingCanvas::OnMouseDown(wxMouseEvent &event)
 {
-    view->OnMouseDown(event.GetPosition());
-    isDragging = true;
-    Refresh();
+    if (MyApp::GetStrokeSettings().currentTool != ToolType::ZoomIn)
+    {
+        view->OnMouseDown(event.GetPosition());
+        isDragging = true;
+        Refresh();
+    }
 }
 
 void DrawingCanvas::OnMouseMove(wxMouseEvent &event)
 {
-    if (isDragging)
+    if (isDragging && MyApp::GetStrokeSettings().currentTool != ToolType::ZoomIn)
     {
         view->OnMouseDrag(event.GetPosition());
         Refresh();
@@ -106,7 +102,7 @@ void DrawingCanvas::OnMouseMove(wxMouseEvent &event)
 
 void DrawingCanvas::OnMouseUp(wxMouseEvent &event)
 {
-    if (isDragging && MyApp::GetStrokeSettings().currentTool != ToolType::Text)
+    if (isDragging && MyApp::GetStrokeSettings().currentTool != ToolType::Text && MyApp::GetStrokeSettings().currentTool != ToolType::ZoomIn)
     {
         view->OnMouseDragEnd();
         isDragging = false;
@@ -152,19 +148,16 @@ void DrawingCanvas::OnScroll(wxMouseEvent &event)
 {
     if (MyApp::GetStrokeSettings().currentTool == ToolType::ZoomIn)
     {
-        m_zoomFactor += event.GetWheelRotation() / event.GetWheelDelta();
-        if (m_zoomFactor < 1)
+        if (m_zoomLevel == 0)
         {
-            m_zoomFactor = 1;
-            return;
-        }
-        if (event.GetWheelRotation() > 0)
-        {
-            view->SetZoomFactor(m_zoomFactor, event.GetPosition());
             m_lastZoomCenter = event.GetPosition();
         }
-        else
-            view->SetZoomFactor(m_zoomFactor, m_lastZoomCenter);
+
+        m_zoomLevel = event.GetWheelRotation() / event.GetWheelDelta();
+
+        m_zoomFactor = std::pow(1.1, m_zoomLevel);
+
+        view->SetZoomFactor(m_zoomFactor, event.GetPosition());
     }
     Refresh();
 }
@@ -244,8 +237,6 @@ wxRect DrawingCanvas::getCanvasBound() const
 void DrawingCanvas::OnPaint(wxPaintEvent &event)
 {
     wxAutoBufferedPaintDC dc(this);
-    dc.SetBackground(*wxWHITE_BRUSH);
-    dc.Clear();
 
     if (view)
     {

@@ -1,23 +1,30 @@
 #include "ShapeMenu.h"
 
-void ShapeMenu::SetUpShapeMenu(wxWindow *parent, wxSizer *sizer, wxStaticText *text, std::function<void()> reset)
+void ShapeMenu::SetUpShapeMenu(wxWindow *parent, wxSizer *sizer)
 {
+    auto wrapSizer = new wxWrapSizer(wxHORIZONTAL);
+    auto label = new wxStaticText(parent, wxID_ANY, "Shape");
+    label->SetForegroundColour(wxColour(231, 246, 242));
+
     for (const auto &i : shapeTypes)
     {
         auto shapePane = new ShapePane(parent, wxID_ANY, i);
 
-        shapePane->AddCallback([this, i, reset]()
+        shapePane->AddCallback([this, i]()
                                { 
                             MyApp::GetStrokeSettings().currentShape = i;
-                            MyApp::GetStrokeSettings().currentTool = ToolType::Shape; 
-                            reset(); });
+                            MyApp::GetStrokeSettings().currentTool = ToolType::Shape; });
 
         shapePanes.push_back(shapePane);
-        sizer->Add(shapePane, 0, wxRIGHT | wxBOTTOM, parent->FromDIP(5));
+        wrapSizer->Add(shapePane, 0, wxRIGHT | wxBOTTOM, parent->FromDIP(5));
     }
+
+    sizer->Add(label, 0, wxALL, parent->FromDIP(5));
+    sizer->Add(wrapSizer, 0, wxALL, parent->FromDIP(5));
+
     m_parent = parent;
-    m_sizer = sizer;
-    m_text = text;
+    m_sizer = wrapSizer;
+    m_text = label;
 }
 
 void ShapeMenu::SelectShapePane()

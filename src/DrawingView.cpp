@@ -45,6 +45,9 @@ void DrawingView::OnChangeFilename()
 
 void DrawingView::OnDraw(wxDC *dc)
 {
+    dc->SetBackground(*wxWHITE_BRUSH);
+    dc->Clear();
+
     std::unique_ptr<wxGraphicsContext> gc{wxGraphicsContext::CreateFromUnknownDC(*dc)};
 
     if (gc)
@@ -52,16 +55,21 @@ void DrawingView::OnDraw(wxDC *dc)
 
         for (const auto &obj : GetDocument()->objects)
         {
-            obj.get().Draw(*gc);
+            obj.get().Draw(*gc, isExporting);
         }
 
         if (selectionBox)
         {
-            selectionBox->Draw(*gc);
+            selectionBox->Draw(*gc, isExporting);
         }
 
         shapeCreator.Draw(*gc);
     }
+}
+
+void DrawingView::SetExporting(bool isExporting)
+{
+    this->isExporting = isExporting;
 }
 
 void DrawingView::OnMouseDown(wxPoint pt)
@@ -279,7 +287,6 @@ void DrawingView::SetCanvasBound(wxRect bound)
 void DrawingView::SetZoomFactor(double zoomFactor, wxPoint2DDouble center)
 {
     m_zoomFactor = zoomFactor;
-    CanvasObject::globalScaleFactor = zoomFactor;
     for (auto &obj : GetDocument()->objects)
     {
         obj.get().SetZoomMatrix(zoomFactor, center);

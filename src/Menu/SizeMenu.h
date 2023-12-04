@@ -8,7 +8,7 @@
 class SizeMenu : public MenuTemplate
 {
 public:
-    void SetUpSizeMenu(wxWindow *parent, wxSizer *sizer, wxStaticText *text);
+    void SetUpSizeMenu(wxWindow *parent, wxSizer *sizer);
 
 private:
     void SelectSizePane(SizePane *pane);

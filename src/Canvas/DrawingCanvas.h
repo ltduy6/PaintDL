@@ -22,7 +22,6 @@ public:
     void ShowExportDialog();
     void ReFreshCanvas();
     void RotateCommand();
-    void CallScale(double scaleFactor);
     void Zoom(double zoomFactor);
     DrawingView *GetView() const;
 
@@ -48,7 +47,9 @@ private:
 private:
     DrawingView *view;
     std::reference_wrapper<HistoryPanel> m_historyPanel;
-    double m_zoomFactor{1};
     wxPoint2DDouble m_lastZoomCenter{};
+    double m_zoomFactor{1};
+    int m_zoomLevel{0};
     bool isDragging{false};
+    bool isFirstScroll{true};
 };

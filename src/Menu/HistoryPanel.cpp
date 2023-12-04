@@ -1,7 +1,9 @@
 #include "HistoryPanel.h"
 
-void HistoryPanel::SetUp(wxWindow *parent, wxSizer *sizer)
+void HistoryPanel::SetUp(wxWindow *parent)
 {
+    auto mainSizer = new wxBoxSizer(wxVERTICAL);
+
     historyPanel = new wxScrolled<wxPanel>(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
     historySizer = new wxBoxSizer(wxVERTICAL);
     historyPanel->SetScrollRate(0, parent->FromDIP(10));
@@ -10,8 +12,12 @@ void HistoryPanel::SetUp(wxWindow *parent, wxSizer *sizer)
 
     auto text = new wxStaticText(parent, wxID_ANY, "History Panel");
     text->SetForegroundColour(wxColour(231, 246, 242));
-    sizer->Add(text, 0, wxALL, parent->FromDIP(5));
-    sizer->Add(historyPanel, 1, wxEXPAND | wxALL, parent->FromDIP(5));
+    mainSizer->Add(text, 0, wxALL, parent->FromDIP(5));
+    mainSizer->Add(historyPanel, 1, wxEXPAND | wxALL, parent->FromDIP(5));
+
+    parent->SetSizer(mainSizer);
+    parent->Layout();
+    mainSizer->Fit(parent);
 }
 
 void HistoryPanel::AddHistoryItem(wxCommandProcessor *historyProcessor, HistoryPane *button)

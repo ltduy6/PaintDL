@@ -10,13 +10,8 @@
 
 #include "myapp.h"
 
-#include "Menu/RoundedButton.h"
-#include "Menu/ColorMenu.h"
-#include "Menu/SizeMenu.h"
-#include "Menu/ShapeMenu.h"
-#include "Menu/ToolMenu.h"
-#include "Menu/ImageMenu.h"
 #include "Menu/HistoryPanel.h"
+#include "Menu/MenuBar.h"
 
 #include "Canvas/DrawingCanvas.h"
 #include "DrawingDocument.h"
@@ -34,27 +29,20 @@ public:
     void SetupCanvasForView(DrawingView *view);
 
 private:
-    wxScrolled<wxPanel> *BuildControlsPanel(wxWindow *parent);
+    wxScrolled<wxPanel> *BuildControlsPanel(wxSplitterWindow *parent);
+    wxPanel *BuildHistoryPanel(wxWindow *parent);
 
     void BuildMenuBar();
     void ResetControls();
 
 private:
-    ColorMenu colorMenu{};
-    SizeMenu sizeMenu{};
-    ShapeMenu shapeMenu{};
-    ToolMenu toolMenu{};
-    ImageMenu imageMenu{};
     HistoryPanel historyPanelHolder{};
-    CanvasInfoPanel canvasInfoPanel{};
+    MenuBar menuBarHolder{};
 
-    wxScrolled<wxPanel> *docPanel;
+    wxPanel *docPanel;
     wxPanel *zoomPanel;
     wxScrolled<wxPanel> *m_controlsPanel;
-    wxScrolled<wxPanel> *m_historyPanel;
-
-    wxStaticText *textSize;
-    wxSizer *penWidthSizer;
+    wxPanel *m_historyPanel;
 
     wxMenu *editMenu{nullptr};
     DrawingCanvas *m_canvas{nullptr};
@@ -114,13 +102,6 @@ void MyFrame::SetupCanvasForView(DrawingView *view)
     {
         auto canvas = new DrawingCanvas(docPanel, view, historyPanelHolder, wxID_ANY, wxDefaultPosition, wxDefaultSize);
         docPanel->GetSizer()->Add(canvas, 1, wxEXPAND);
-        imageMenu.CallRotate(canvas);
-        shapeMenu.AddCallBack([canvas]()
-                              { canvas->ReFreshCanvas(); });
-        toolMenu.AddCallBack([canvas]()
-                             { canvas->ReFreshCanvas(); });
-        canvasInfoPanel.SetUpChoice([canvas](double choice)
-                                    { canvas->Zoom(choice); });
 
         m_canvas = canvas;
 
@@ -136,76 +117,41 @@ void MyFrame::SetupCanvasForView(DrawingView *view)
     docPanel->Layout();
 }
 
-wxScrolled<wxPanel> *MyFrame::BuildControlsPanel(wxWindow *parent)
+wxScrolled<wxPanel> *MyFrame::BuildControlsPanel(wxSplitterWindow *parent)
 {
     auto controlsPanel = new wxScrolled<wxPanel>(parent, wxID_ANY);
+    auto toolsPanel = new wxScrolled<wxPanel>(parent, wxID_ANY);
+
     controlsPanel->SetScrollRate(0, FromDIP(10));
+    toolsPanel->SetScrollRate(0, FromDIP(10));
 
     controlsPanel->SetBackgroundColour(wxColour(83, 83, 83));
+    toolsPanel->SetBackgroundColour(wxColour(83, 83, 83));
 
     auto mainSizer = new wxBoxSizer(wxVERTICAL);
-
-    auto addGroup = [this, controlsPanel, mainSizer](const wxString &title)
-    {
-        auto text = new wxStaticText(controlsPanel, wxID_ANY, title);
-        text->SetForegroundColour(wxColour(231, 246, 242));
-        mainSizer->Add(text, 0, wxALL, FromDIP(5));
-
-        auto wrapSizer = new wxWrapSizer(wxHORIZONTAL);
-        if (title == "Colors")
-        {
-            colorMenu.SetUpColorMenu(controlsPanel, wrapSizer, this);
-        }
-        else if (title == "Tools")
-        {
-            toolMenu.SetUpToolMenu(controlsPanel, wrapSizer, [this]()
-                                   { ResetControls(); });
-        }
-        else if (title == "Image")
-        {
-            imageMenu.SetUpImageMenu(controlsPanel, wrapSizer, text);
-        }
-        else if (title == "Size")
-        {
-            sizeMenu.SetUpSizeMenu(controlsPanel, wrapSizer, text);
-        }
-        else if (title == "Shapes")
-        {
-            shapeMenu.SetUpShapeMenu(controlsPanel, wrapSizer, text, [this]()
-                                     { ResetControls(); });
-        }
-        else
-        {
-            throw std::runtime_error("Unknown group title");
-        }
-
-        mainSizer->Add(wrapSizer, 0, wxALL, FromDIP(5));
-    };
-
-    addGroup("Colors");
-    addGroup("Tools");
-    addGroup("Shapes");
-    addGroup("Size");
-    addGroup("Image");
-
-    historyPanelHolder.SetUp(controlsPanel, mainSizer);
-
     controlsPanel->SetSizer(mainSizer);
+    auto toolSizer = new wxWrapSizer(wxVERTICAL);
+    toolsPanel->SetSizer(toolSizer);
+
+    menuBarHolder.SetUp(controlsPanel, mainSizer, toolsPanel, toolSizer);
+
     controlsPanel->Layout();
     mainSizer->Fit(controlsPanel);
 
-    imageMenu.Show(false);
-    toolMenu.AddHideCallBack([this]()
-                             { imageMenu.Show(false); },
-                             (int)ToolType::Brush & (int)ToolType::Transform & (int)ToolType::Text);
-    toolMenu.AddShowCallBack([this]()
-                             { imageMenu.Show(true); },
-                             (int)ToolType::Transform);
-    toolMenu.AddShowCallBack([this]()
-                             { shapeMenu.Show(true);
-                            sizeMenu.Show(true); },
-                             (int)ToolType::Brush);
+    toolsPanel->Layout();
+    toolSizer->Fit(toolsPanel);
+
+    parent->SplitVertically(toolsPanel, controlsPanel);
+    parent->SetSashPosition(FromDIP(40));
     return controlsPanel;
+}
+
+wxPanel *MyFrame::BuildHistoryPanel(wxWindow *parent)
+{
+    auto historyPanel = new wxPanel(parent, wxID_ANY);
+    historyPanel->SetBackgroundColour(wxColour(83, 83, 83));
+    historyPanelHolder.SetUp(historyPanel);
+    return historyPanel;
 }
 
 MyFrame::MyFrame(wxDocManager *manager, wxFrame *frame, wxWindowID id, const wxString &title,
@@ -213,25 +159,22 @@ MyFrame::MyFrame(wxDocManager *manager, wxFrame *frame, wxWindowID id, const wxS
     : wxDocParentFrame(manager, frame, id, title, pos, size)
 {
     wxSplitterWindow *splitter = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_BORDER | wxSP_NOSASH);
-    wxSplitterWindow *docSplitter = new wxSplitterWindow(splitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_BORDER | wxSP_NOSASH);
+    wxSplitterWindow *splitterControl = new wxSplitterWindow(splitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_BORDER);
+    wxSplitterWindow *splitterTool = new wxSplitterWindow(splitterControl, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_BORDER);
+
     splitter->SetMinimumPaneSize(FromDIP(150));
 
-    m_controlsPanel = BuildControlsPanel(splitter);
-    docPanel = new wxScrolled<wxPanel>(docSplitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS | wxVSCROLL | wxHSCROLL);
+    m_controlsPanel = BuildControlsPanel(splitterTool);
+    m_historyPanel = BuildHistoryPanel(splitterControl);
+
+    splitterControl->SplitHorizontally(splitterTool, m_historyPanel);
+    splitterControl->SetSashPosition(FromDIP(500));
+
+    docPanel = new wxPanel(splitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS);
     docPanel->SetSizer(new wxBoxSizer(wxVERTICAL));
     docPanel->SetBackgroundColour(wxColour(40, 40, 40));
-    docPanel->SetScrollRate(0, FromDIP(10));
 
-    zoomPanel = new wxPanel(docSplitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS);
-    zoomPanel->SetSizer(new wxBoxSizer(wxVERTICAL));
-    zoomPanel->SetBackgroundColour(wxColour(83, 83, 83));
-
-    canvasInfoPanel.Setup(zoomPanel);
-
-    docSplitter->SplitHorizontally(docPanel, zoomPanel);
-    docSplitter->SetMinimumPaneSize(FromDIP(800));
-
-    splitter->SplitVertically(m_controlsPanel, docSplitter);
+    splitter->SplitVertically(splitterControl, docPanel);
     splitter->SetSashPosition(FromDIP(100));
 
     this->SetSize(FromDIP(800), FromDIP(500));
@@ -271,10 +214,4 @@ void MyFrame::BuildMenuBar()
     menuBar->Append(editMenu, "&Edit");
 
     SetMenuBar(menuBar);
-}
-
-void MyFrame::ResetControls()
-{
-    shapeMenu.SelectShapePane();
-    toolMenu.SelectToolPane();
 }

@@ -41,6 +41,12 @@ Menu/ImageMenu.cpp
 Menu/HistoryPanel.cpp
 Menu/HistoryPane.cpp
 Menu/MenuTemplate.cpp
+Menu/BrushToolMenu.cpp
+Menu/MenuBar.cpp
+Menu/ShapeToolMenu.cpp
+Menu/SelectionToolMenu.cpp
+Menu/TextToolMenu.cpp
+Menu/ZoomToolMenu.cpp
 # Command folder
 Command/AddCommand.cpp
 Command/SelectionCommand.cpp

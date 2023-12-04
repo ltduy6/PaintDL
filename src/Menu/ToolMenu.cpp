@@ -1,68 +1,27 @@
 #include "ToolMenu.h"
 
-void ToolMenu::SetUpToolMenu(wxWindow *parent, wxSizer *sizer, std::function<void()> reset)
+ToolMenu::ToolMenu(wxWindow *parent, wxSizer *sizer, ToolType type) : type(type)
 {
-    for (const auto toolType : toolTypes)
-    {
-        auto toolPane = new ToolsPane(parent, wxID_ANY, toolType);
-        toolPane->AddCallback([this, toolType, reset]()
+    mainToolPane = new ToolsPane(parent, wxID_ANY, type);
+    mainToolPane->AddCallback([this, type]()
                               { 
-                        MyApp::GetStrokeSettings().currentTool = toolType;
-                        if(toolType == ToolType::Brush)
+                        MyApp::GetStrokeSettings().currentTool = type;
+                        if(type == ToolType::Brush)
                             MyApp::GetStrokeSettings().currentShape = ShapeType::Path;
-                        else if(toolType == ToolType::Transform)
+                        else if(type == ToolType::Transform)
                             MyApp::GetStrokeSettings().currentShape = ShapeType::None;
-                        else if(toolType == ToolType::Text)
+                        else if(type == ToolType::Text)
                             MyApp::GetStrokeSettings().currentShape = ShapeType::Text; });
-        toolPanes.push_back(toolPane);
-        sizer->Add(toolPane, 0, wxRIGHT | wxBOTTOM, parent->FromDIP(5));
-    }
-
-    AddCallBack(reset);
-    MyApp::GetStrokeSettings().currentTool = ToolType::Brush;
-    MyApp::GetStrokeSettings().currentShape = ShapeType::Path;
-    reset();
+    sizer->Add(mainToolPane, 0, wxRIGHT | wxBOTTOM, parent->FromDIP(5));
 }
 
-void ToolMenu::SelectToolPane()
+void ToolMenu::Show(bool show)
 {
-    for (auto toolPane : toolPanes)
-    {
-        toolPane->selected = (toolPane->getToolType() == MyApp::GetStrokeSettings().currentTool);
-        toolPane->Refresh();
-    }
+    mainToolPane->selected = show;
+    ShowMenu(show);
 }
 
-void ToolMenu::AddCallBack(std::function<void()> callBack)
+void ToolMenu::SetCallback(std::function<void()> callback)
 {
-    for (const auto &toolPane : toolPanes)
-    {
-        toolPane->AddCallback(callBack);
-    }
-}
-
-void ToolMenu::AddShowCallBack(std::function<void()> callBack, int type)
-{
-    for (const auto &toolPane : toolPanes)
-    {
-        int toolType = (int)toolPane->getToolType();
-        if ((int)(~toolType & type) == 0)
-        {
-            toolPane->AddCallback(callBack);
-            break;
-        }
-    }
-}
-
-void ToolMenu::AddHideCallBack(std::function<void()> callBack, int type)
-{
-    for (const auto &toolPane : toolPanes)
-    {
-        int toolType = (int)toolPane->getToolType();
-        if ((int)(~toolType & type) == 0)
-        {
-            toolPane->AddCallback(callBack);
-            break;
-        }
-    }
+    mainToolPane->AddCallback(callback);
 }
