@@ -11,6 +11,7 @@ class ImageMenu : public MenuTemplate
 public:
     void SetUpImageMenu(wxWindow *parent, wxSizer *sizer);
     void CallRotate(DrawingCanvas *canvas);
+    void PopCallback();
     ToolsPane *GetRotatePane() const;
 
 private:

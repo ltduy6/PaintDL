@@ -15,8 +15,9 @@ public:
     void SetUpColorMenu(wxWindow *parent, wxSizer *sizer, int numColorPanes = 11, std::string label = "Color");
 
 private:
-    void SelectColorPane(ColorPane *pane);
-    void SelectCustomColor(wxWindow *parent);
+    void SelectColorPane(ColorPane *pane, std::string label);
+    void SelectCustomColor(wxWindow *parent, std::string label);
+    void UpdateColor(wxColour colour, std::string label);
 
 private:
     ColorPane *selectedColorPane;

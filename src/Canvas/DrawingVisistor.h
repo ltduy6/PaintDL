@@ -18,7 +18,9 @@ struct DrawingVisitor
 
     void operator()(const Rect &rect)
     {
-        gc.SetPen(wxPen(rect.color, rect.width));
+        gc.SetPen(wxPen(rect.outlineColor, rect.width));
+        gc.SetBrush(wxColour(rect.fillColor));
+
         wxPoint2DDouble *points = new wxPoint2DDouble[5];
         points[0] = rect.rect.GetLeftTop();
         points[1] = rect.rect.GetRightTop();
@@ -32,7 +34,20 @@ struct DrawingVisitor
                 points[i] = matrix->TransformPoint(points[i]);
             }
         }
-        gc.StrokeLines(5, points);
+        wxGraphicsPath *path = new wxGraphicsPath(gc.CreatePath());
+        for (int i = 0; i < 5; ++i)
+        {
+            if (i == 0)
+                path->MoveToPoint(points[i]);
+            else
+                path->AddLineToPoint(points[i]);
+        }
+        path->CloseSubpath();
+
+        gc.FillPath(*path);
+        gc.StrokePath(*path);
+
+        delete path;
         delete[] points;
     }
 
@@ -55,7 +70,7 @@ struct DrawingVisitor
     void operator()(const Circle &circle)
     {
         // get 500 points in an ellipse
-        gc.SetPen(wxPen(circle.color, circle.width));
+        gc.SetPen(wxPen(circle.outlineColor, circle.width));
         wxPoint2DDouble *points = new wxPoint2DDouble[501];
         for (int i = 0; i < 500; i++)
         {
@@ -76,7 +91,7 @@ struct DrawingVisitor
 
     void operator()(const ITriangle &triangle)
     {
-        gc.SetPen(wxPen(triangle.color, triangle.width));
+        gc.SetPen(wxPen(triangle.outlineColor, triangle.width));
 
         wxPoint2DDouble *points = new wxPoint2DDouble[4];
         points[0] = {triangle.rect.GetCentre().m_x, triangle.rect.GetTop()};
@@ -98,7 +113,7 @@ struct DrawingVisitor
 
     void operator()(const RTriangle &triangle)
     {
-        gc.SetPen(wxPen(triangle.color, triangle.width));
+        gc.SetPen(wxPen(triangle.outlineColor, triangle.width));
 
         wxPoint2DDouble *points = new wxPoint2DDouble[4];
         points[0] = triangle.rect.GetLeftTop();
@@ -120,7 +135,7 @@ struct DrawingVisitor
 
     void operator()(const Diamond &diamond)
     {
-        gc.SetPen(wxPen(diamond.color, diamond.width));
+        gc.SetPen(wxPen(diamond.outlineColor, diamond.width));
 
         wxPoint2DDouble *points = new wxPoint2DDouble[5];
         points[0] = {diamond.rect.m_x + diamond.rect.m_width / 2, diamond.rect.m_y};

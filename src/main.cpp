@@ -96,6 +96,7 @@ void MyFrame::SetupCanvasForView(DrawingView *view)
     {
         docPanel->GetSizer()->Clear(true);
         historyPanelHolder.ClearHistory();
+        menuBarHolder.ClearMenuBarCallback();
     }
 
     if (view != nullptr)
@@ -103,6 +104,7 @@ void MyFrame::SetupCanvasForView(DrawingView *view)
         auto canvas = new DrawingCanvas(docPanel, view, historyPanelHolder, wxID_ANY, wxDefaultPosition, wxDefaultSize);
         docPanel->GetSizer()->Add(canvas, 1, wxEXPAND);
 
+        menuBarHolder.SetUpDrawingCanvas(canvas);
         m_canvas = canvas;
 
         view->GetDocument()->GetCommandProcessor()->SetEditMenu(editMenu);

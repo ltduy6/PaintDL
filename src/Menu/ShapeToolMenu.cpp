@@ -10,6 +10,7 @@ ShapeToolMenu::ShapeToolMenu(wxWindow *parent, wxSizer *sizer, wxWindow *toolPar
 void ShapeToolMenu::ShowMenu(bool show)
 {
     shapeMenu.Show(show);
+    shapeMenu.SelectShapePane();
     colorOutline.Show(show);
     colorFill.Show(show);
 }

@@ -15,6 +15,26 @@ void MenuBar::SetUp(wxWindow *parent, wxSizer *sizer, wxWindow *toolsParent, wxS
     parent = parent;
 }
 
+void MenuBar::SetUpDrawingCanvas(DrawingCanvas *drawingCanvas)
+{
+    for (auto toolMenu : toolMenus)
+    {
+        toolMenu->SetCallback([drawingCanvas]()
+                              { if(drawingCanvas)
+                                    drawingCanvas->ReFreshCanvas(); });
+        if (toolMenu->type == ToolType::Transform)
+            dynamic_cast<SelectionToolMenu *>(toolMenu)->CallRotate(drawingCanvas);
+    }
+}
+
+void MenuBar::ClearMenuBarCallback()
+{
+    for (auto toolMenu : toolMenus)
+    {
+        toolMenu->PopCallback();
+    }
+}
+
 MenuBar::~MenuBar()
 {
     for (auto toolMenu : toolMenus)

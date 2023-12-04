@@ -16,6 +16,12 @@ void SelectablePane::AddCallback(std::function<void()> callback)
     callbacks.push_back(callback);
 }
 
+void SelectablePane::PopCallback()
+{
+    callbacks.pop_back();
+    std::cout << callbacks.size() << std::endl;
+}
+
 void SelectablePane::OnPaint(wxPaintEvent &event)
 {
     wxAutoBufferedPaintDC dc(this);

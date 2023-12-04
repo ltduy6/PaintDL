@@ -9,3 +9,13 @@ void SelectionToolMenu::ShowMenu(bool show)
 {
     imageMenu.Show(show);
 }
+
+void SelectionToolMenu::CallRotate(DrawingCanvas *canvas)
+{
+    imageMenu.CallRotate(canvas);
+}
+
+void SelectionToolMenu::ItemPopCallback()
+{
+    imageMenu.PopCallback();
+}

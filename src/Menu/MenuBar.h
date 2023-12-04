@@ -5,11 +5,14 @@
 #include "SelectionToolMenu.h"
 #include "TextToolMenu.h"
 #include "ZoomToolMenu.h"
+#include "../Canvas/DrawingCanvas.h"
 
 class MenuBar
 {
 public:
     void SetUp(wxWindow *parent, wxSizer *sizer, wxWindow *toolsParent, wxSizer *toolsSizer);
+    void SetUpDrawingCanvas(DrawingCanvas *drawingCanvas);
+    void ClearMenuBarCallback();
     ~MenuBar();
 
 private:

@@ -12,6 +12,8 @@ public:
     void Show(bool show);
     virtual ~ToolMenu() = default;
     void SetCallback(std::function<void()> callback);
+    void PopCallback();
+    virtual void ItemPopCallback(){};
 
 protected:
     virtual void ShowMenu(bool show) = 0;

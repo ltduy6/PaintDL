@@ -11,7 +11,9 @@ ToolMenu::ToolMenu(wxWindow *parent, wxSizer *sizer, ToolType type) : type(type)
                         else if(type == ToolType::Transform)
                             MyApp::GetStrokeSettings().currentShape = ShapeType::None;
                         else if(type == ToolType::Text)
-                            MyApp::GetStrokeSettings().currentShape = ShapeType::Text; });
+                            MyApp::GetStrokeSettings().currentShape = ShapeType::Text;
+                        else if(type == ToolType::Shape)
+                            MyApp::GetStrokeSettings().currentShape = ShapeType::Rect; });
     sizer->Add(mainToolPane, 0, wxRIGHT | wxBOTTOM, parent->FromDIP(5));
 }
 
@@ -24,4 +26,10 @@ void ToolMenu::Show(bool show)
 void ToolMenu::SetCallback(std::function<void()> callback)
 {
     mainToolPane->AddCallback(callback);
+}
+
+void ToolMenu::PopCallback()
+{
+    mainToolPane->PopCallback();
+    ItemPopCallback();
 }

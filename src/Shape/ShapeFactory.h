@@ -14,15 +14,15 @@ struct ShapeFactory
         case ShapeType::Path:
             return Path{settings.color, settings.width, {origin2D}};
         case ShapeType::Rect:
-            return Rect{{origin2D.m_x, origin2D.m_y, 0, 0}, settings.color, settings.width};
+            return Rect{{origin2D.m_x, origin2D.m_y, 0, 0}, settings.outlineColor, settings.fillColor, settings.width};
         case ShapeType::Circle:
-            return Circle{{origin2D.m_x, origin2D.m_y, 0, 0}, settings.color, settings.width};
+            return Circle{{origin2D.m_x, origin2D.m_y, 0, 0}, settings.outlineColor, settings.fillColor, settings.width};
         case ShapeType::ITriangle:
-            return ITriangle{{origin2D.m_x, origin2D.m_y, 0, 0}, origin2D, origin2D, settings.color, settings.width};
+            return ITriangle{{origin2D.m_x, origin2D.m_y, 0, 0}, origin2D, origin2D, settings.outlineColor, settings.fillColor, settings.width};
         case ShapeType::RTriangle:
-            return RTriangle{{origin2D.m_x, origin2D.m_y, 0, 0}, origin2D, origin2D, settings.color, settings.width};
+            return RTriangle{{origin2D.m_x, origin2D.m_y, 0, 0}, origin2D, origin2D, settings.outlineColor, settings.fillColor, settings.width};
         case ShapeType::Diamond:
-            return Diamond{{origin2D.m_x, origin2D.m_y, 0, 0}, settings.color, settings.width};
+            return Diamond{{origin2D.m_x, origin2D.m_y, 0, 0}, settings.outlineColor, settings.fillColor, settings.width};
         case ShapeType::Text:
         {
             return Text{{origin2D.m_x, origin2D.m_y, 100, 50}, "Hello", settings.color, settings.width};

@@ -20,8 +20,14 @@ void ImageMenu::SetUpImageMenu(wxWindow *parent, wxSizer *sizer)
 void ImageMenu::CallRotate(DrawingCanvas *canvas)
 {
     rotatePane->AddCallback([canvas]()
-                            { canvas->RotateCommand(); });
+                            { if(canvas)
+                                canvas->RotateCommand(); });
 }
+void ImageMenu::PopCallback()
+{
+    rotatePane->PopCallback();
+}
+
 ToolsPane *ImageMenu::GetRotatePane() const
 {
     return rotatePane;

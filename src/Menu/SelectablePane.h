@@ -20,6 +20,7 @@ public:
     }
 
     void AddCallback(std::function<void()> callback);
+    void PopCallback();
     bool selected = false;
 
 protected:

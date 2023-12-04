@@ -5,6 +5,7 @@
 struct Rect
 {
     wxRect2DDouble rect;
-    wxColour color;
+    wxColour outlineColor;
+    wxColour fillColor;
     int width;
 };

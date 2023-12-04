@@ -7,6 +7,7 @@ struct RTriangle
     wxRect2DDouble rect;
     wxPoint2DDouble drag;
     wxPoint2DDouble origin;
-    wxColour color;
+    wxColour outlineColor;
+    wxColour fillColor;
     int width;
 };

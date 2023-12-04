@@ -13,7 +13,8 @@ void ShapeMenu::SetUpShapeMenu(wxWindow *parent, wxSizer *sizer)
         shapePane->AddCallback([this, i]()
                                { 
                             MyApp::GetStrokeSettings().currentShape = i;
-                            MyApp::GetStrokeSettings().currentTool = ToolType::Shape; });
+                            MyApp::GetStrokeSettings().currentTool = ToolType::Shape;
+                            SelectShapePane(); });
 
         shapePanes.push_back(shapePane);
         wrapSizer->Add(shapePane, 0, wxRIGHT | wxBOTTOM, parent->FromDIP(5));

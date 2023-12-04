@@ -28,6 +28,9 @@ enum class ShapeType
 struct StrokeSettings
 {
     wxColour color{*wxBLACK};
+    wxColour outlineColor{*wxBLACK};
+    wxColour fillColor{*wxBLACK};
+
     int width{3};
     double selectionHandleWidth;
 
