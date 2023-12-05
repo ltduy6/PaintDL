@@ -69,4 +69,6 @@ void ColorMenu::UpdateColor(wxColour colour, std::string label)
         MyApp::GetStrokeSettings().outlineColor = colour;
     else if (label == "Fill")
         MyApp::GetStrokeSettings().fillColor = colour;
+    else if (label == "Text color")
+        MyApp::GetStrokeSettings().textColor = colour;
 }

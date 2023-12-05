@@ -30,6 +30,7 @@ struct StrokeSettings
     wxColour color{*wxBLACK};
     wxColour outlineColor{*wxBLACK};
     wxColour fillColor{*wxBLACK};
+    wxColour textColor{*wxBLACK};
 
     int width{3};
     double selectionHandleWidth;

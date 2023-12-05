@@ -132,6 +132,7 @@ void DrawingCanvas::OnMouseUp(wxMouseEvent &event)
             view->GetDocument()->GetCommandProcessor()->Submit(command);
             m_historyPanel.get().AddHistoryItem(view->GetDocument()->GetCommandProcessor(), historyPane);
         }
+        std::cout << "Yes" << std::endl;
         view->OnMouseDragEnd();
     }
 }

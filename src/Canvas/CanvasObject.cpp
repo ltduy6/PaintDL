@@ -16,8 +16,8 @@ void CanvasObject::Draw(wxGraphicsContext &gc, bool isExporting)
         gc.SetTransform(gc.CreateMatrix(m_zoomMatrix));
     }
 
-    wxAffineMatrix2D *matrix = new wxAffineMatrix2D(ObjectSpace::GetTempTransformationMatrix(*this));
-    std::visit(DrawingVisitor{gc, matrix, &m_boundingBox}, m_shape);
+    wxAffineMatrix2D *matrix = new wxAffineMatrix2D(m_transformationMatrix);
+    std::visit(DrawingVisitor{gc, matrix, this}, m_shape);
     delete matrix;
 
     gc.PopState();
@@ -52,14 +52,13 @@ Shape &CanvasObject::GetShape()
 wxAffineMatrix2D CanvasObject::GetTransformationMatrix() const
 {
     wxAffineMatrix2D matrix = m_zoomMatrix;
-    matrix.Concat(ObjectSpace::GetTempTransformationMatrix(*this));
+    matrix.Concat(m_transformationMatrix);
     return matrix;
 }
 
 wxAffineMatrix2D CanvasObject::GetInverseTransformationMatrix() const
 {
-    wxAffineMatrix2D matrix = m_zoomMatrix;
-    matrix.Concat(ObjectSpace::GetTempTransformationMatrix(*this));
+    wxAffineMatrix2D matrix = GetTransformationMatrix();
     matrix.Invert();
     return matrix;
 }
@@ -124,5 +123,13 @@ void CanvasObject::SetCanRotate(bool canRotate)
 
 void CanvasObject::IncreaseHeight(double height)
 {
-    m_boundingBox.m_height = height;
+    std::cout << height / m_boundingBox.m_height << std::endl;
+    wxAffineMatrix2D *newMatrix = new wxAffineMatrix2D();
+    wxPoint2DDouble *center = new wxPoint2DDouble((m_boundingBox.GetLeftTop() + m_boundingBox.GetRightTop()) / 2);
+    newMatrix->Translate(center->m_x, center->m_y);
+    newMatrix->Scale(1, height / m_boundingBox.m_height);
+    newMatrix->Translate(-center->m_x, -center->m_y);
+    m_transformationMatrix.Concat(*newMatrix);
+    delete newMatrix;
+    delete center;
 }

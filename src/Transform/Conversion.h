@@ -19,8 +19,6 @@ namespace TransformWxConversion
         matrix.Scale(t.scaleX, t.scaleY);
         matrix.Translate(-scaleCenter.m_x, -scaleCenter.m_y);
 
-        matrix.Concat(t.zoomMatrix);
-
         return matrix;
     }
 

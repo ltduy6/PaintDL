@@ -9,12 +9,13 @@
 #include "../Shape/Path.h"
 #include "../Shape/Rect.h"
 #include "../Shape/RTriangle.h"
+#include "CanvasObject.h"
 
 struct DrawingVisitor
 {
     wxGraphicsContext &gc;
     wxAffineMatrix2D *matrix;
-    wxRect2DDouble *boundingBox;
+    CanvasObject *m_object;
 
     void operator()(const Rect &rect)
     {
@@ -71,6 +72,8 @@ struct DrawingVisitor
     {
         // get 500 points in an ellipse
         gc.SetPen(wxPen(circle.outlineColor, circle.width));
+        gc.SetBrush(wxColour(circle.fillColor));
+
         wxPoint2DDouble *points = new wxPoint2DDouble[501];
         for (int i = 0; i < 500; i++)
         {
@@ -78,6 +81,7 @@ struct DrawingVisitor
                          circle.rect.m_y + circle.rect.m_height / 2 + circle.rect.m_height / 2 * sin(2.0 * M_PI * i / 500)};
         }
         points[500] = points[0];
+
         if (matrix)
         {
             for (int i = 0; i < 501; i++)
@@ -85,13 +89,28 @@ struct DrawingVisitor
                 points[i] = matrix->TransformPoint(points[i]);
             }
         }
-        gc.StrokeLines(501, points);
+
+        wxGraphicsPath *path = new wxGraphicsPath(gc.CreatePath());
+        for (int i = 0; i < 501; ++i)
+        {
+            if (i == 0)
+                path->MoveToPoint(points[i]);
+            else
+                path->AddLineToPoint(points[i]);
+        }
+        path->CloseSubpath();
+
+        gc.FillPath(*path);
+        gc.StrokePath(*path);
+
+        delete path;
         delete[] points;
     }
 
     void operator()(const ITriangle &triangle)
     {
         gc.SetPen(wxPen(triangle.outlineColor, triangle.width));
+        gc.SetBrush(wxColour(triangle.fillColor));
 
         wxPoint2DDouble *points = new wxPoint2DDouble[4];
         points[0] = {triangle.rect.GetCentre().m_x, triangle.rect.GetTop()};
@@ -107,13 +126,27 @@ struct DrawingVisitor
             }
         }
 
-        gc.StrokeLines(4, points);
+        wxGraphicsPath *path = new wxGraphicsPath(gc.CreatePath());
+        for (int i = 0; i < 4; ++i)
+        {
+            if (i == 0)
+                path->MoveToPoint(points[i]);
+            else
+                path->AddLineToPoint(points[i]);
+        }
+        path->CloseSubpath();
+
+        gc.FillPath(*path);
+        gc.StrokePath(*path);
+
+        delete path;
         delete[] points;
     }
 
     void operator()(const RTriangle &triangle)
     {
         gc.SetPen(wxPen(triangle.outlineColor, triangle.width));
+        gc.SetBrush(wxColour(triangle.fillColor));
 
         wxPoint2DDouble *points = new wxPoint2DDouble[4];
         points[0] = triangle.rect.GetLeftTop();
@@ -129,13 +162,27 @@ struct DrawingVisitor
             }
         }
 
-        gc.StrokeLines(4, points);
+        wxGraphicsPath *path = new wxGraphicsPath(gc.CreatePath());
+        for (int i = 0; i < 4; ++i)
+        {
+            if (i == 0)
+                path->MoveToPoint(points[i]);
+            else
+                path->AddLineToPoint(points[i]);
+        }
+        path->CloseSubpath();
+
+        gc.FillPath(*path);
+        gc.StrokePath(*path);
+
+        delete path;
         delete[] points;
     }
 
     void operator()(const Diamond &diamond)
     {
         gc.SetPen(wxPen(diamond.outlineColor, diamond.width));
+        gc.SetBrush(wxColour(diamond.fillColor));
 
         wxPoint2DDouble *points = new wxPoint2DDouble[5];
         points[0] = {diamond.rect.m_x + diamond.rect.m_width / 2, diamond.rect.m_y};
@@ -152,7 +199,20 @@ struct DrawingVisitor
             }
         }
 
-        gc.StrokeLines(5, points);
+        wxGraphicsPath *path = new wxGraphicsPath(gc.CreatePath());
+        for (int i = 0; i < 5; ++i)
+        {
+            if (i == 0)
+                path->MoveToPoint(points[i]);
+            else
+                path->AddLineToPoint(points[i]);
+        }
+        path->CloseSubpath();
+
+        gc.FillPath(*path);
+        gc.StrokePath(*path);
+
+        delete path;
         delete[] points;
     }
 
@@ -160,61 +220,57 @@ struct DrawingVisitor
     {
         wxFont font(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_LIGHT);
         wxDouble width, height;
-        gc.SetFont(font, text.color);
-        gc.GetTextExtent(text.text, &width, &height);
         wxDouble *widthBox = new wxDouble(text.rect.m_width);
         wxPoint2DDouble *topLeft = new wxPoint2DDouble(text.rect.m_x, text.rect.m_y);
+
+        gc.SetFont(font, text.color);
+        gc.GetTextExtent(text.text, &width, &height);
         gc.PushState();
+
         if (matrix)
         {
             *widthBox = abs(matrix->TransformDistance(text.rect.GetLeftTop() - text.rect.GetRightTop()).m_x);
             *topLeft = matrix->TransformPoint(text.rect.GetLeftTop());
         }
-        if (width < *widthBox)
+
+        wxArrayString lines;
+        wxString line = "";
+        for (const auto &c : text.text)
         {
-            gc.DrawText(_(text.text), topLeft->m_x, topLeft->m_y);
-        }
-        else
-        {
-            wxArrayString lines;
-            wxString line = "";
-            for (const auto &c : text.text)
+            if (c == '\n')
             {
-                if (c == '\n')
+                lines.push_back(line);
+                line = "";
+            }
+            else
+            {
+                gc.GetTextExtent(line + c, &width, &height);
+                if (width < *widthBox)
                 {
-                    lines.push_back(line);
-                    line = "";
+                    line += c;
                 }
                 else
                 {
-                    gc.GetTextExtent(line + c, &width, &height);
-                    if (width < *widthBox)
-                    {
-                        line += c;
-                    }
-                    else
-                    {
-                        lines.push_back(line);
-                        line = c;
-                    }
+                    lines.push_back(line);
+                    line = c;
                 }
             }
-            lines.push_back(line);
-            wxDouble *newHeight = new wxDouble(0);
-            for (int i = 0; i < lines.size(); i++)
-            {
-                gc.DrawText(_(lines[i]), topLeft->m_x, topLeft->m_y + i * (height));
-                *newHeight += height;
-            }
-            if (boundingBox && matrix->TransformDistance({0, boundingBox->m_height}).m_y < *newHeight)
-            {
-                matrix->Invert();
-                *newHeight = matrix->TransformDistance({0, *newHeight}).m_y;
-                matrix->Invert();
-                boundingBox->m_height = *newHeight;
-            }
-            delete newHeight;
         }
+        lines.push_back(line);
+        wxDouble *newHeight = new wxDouble(0);
+        for (int i = 0; i < lines.size(); i++)
+        {
+            gc.DrawText(_(lines[i]), topLeft->m_x, topLeft->m_y + i * (height));
+            *newHeight += height;
+        }
+        if (m_object && matrix->TransformDistance({0, text.rect.m_height}).m_y < *newHeight)
+        {
+            matrix->Invert();
+            *newHeight = matrix->TransformDistance({0, *newHeight}).m_y;
+            matrix->Invert();
+            m_object->IncreaseHeight(*newHeight);
+        }
+        delete newHeight;
         gc.PopState();
         delete widthBox;
         delete topLeft;

@@ -47,6 +47,7 @@ public:
 
 private:
     void AddPointToCurrentLine(wxPoint);
+    wxChar GetCharFromKeycode(int keycode);
 
 private:
     wxPoint lastDragStart{};

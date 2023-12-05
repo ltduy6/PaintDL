@@ -24,9 +24,7 @@ struct ShapeFactory
         case ShapeType::Diamond:
             return Diamond{{origin2D.m_x, origin2D.m_y, 0, 0}, settings.outlineColor, settings.fillColor, settings.width};
         case ShapeType::Text:
-        {
-            return Text{{origin2D.m_x, origin2D.m_y, 100, 50}, "Hello", settings.color, settings.width};
-        }
+            return Text{{origin2D.m_x, origin2D.m_y, 300, 100}, "Hello", settings.textColor, settings.width};
         default:
             throw std::runtime_error("Unknown shape type");
         }

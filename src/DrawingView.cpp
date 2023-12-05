@@ -117,8 +117,10 @@ void DrawingView::OnMouseDown(wxPoint pt)
         if (selectionBox.has_value())
         {
             selectionBox->StartDragging(pt);
+            if (selectionBox->isDragging())
+                isModified = true;
         }
-        else
+        if (selectionBox.has_value() && !selectionBox->isDragging() || !selectionBox.has_value())
         {
             selectionBox = {};
             shapeCreator.Start(MyApp::GetStrokeSettings(), pt);
@@ -198,6 +200,14 @@ void DrawingView::OnMouseDragEnd()
     }
     case ToolType::Text:
     {
+        if (selectionBox.has_value() && !selectionBox->isDragging())
+        {
+            selectionBox->FinishDragging();
+        }
+        else
+        {
+            selectionBox = {};
+        }
         if (!GetIsModified())
         {
             auto iterator = GetDocument()->objects.back();
@@ -216,13 +226,27 @@ void DrawingView::OnKeyDown(wxKeyEvent &event)
 {
     if (selectionBox.has_value())
     {
-        if (event.GetKeyCode() != WXK_BACK)
+        if (event.GetUnicodeKey() == WXK_NONE)
         {
-            selectionBox->UpdateKey(event.GetUnicodeKey());
+            std::cout << "None" << std::endl;
+            return;
         }
-        else
+        switch (event.GetKeyCode())
         {
+        case WXK_BACK:
             selectionBox->UpdateKey(event.GetUnicodeKey(), true);
+            break;
+        case WXK_CAPITAL:
+            break;
+        case WXK_TAB:
+            break;
+        case WXK_RETURN:
+            std::cout << "Enter" << std::endl;
+            selectionBox->UpdateKey('\n');
+            break;
+        default:
+            selectionBox->UpdateKey(GetCharFromKeycode(event.GetUnicodeKey()));
+            break;
         }
     }
 }
@@ -239,6 +263,77 @@ void DrawingView::AddPointToCurrentLine(wxPoint pt)
 
     currentSquiggle.points.push_back(pt);
     GetDocument()->Modify(true);
+}
+
+wxChar DrawingView::GetCharFromKeycode(int keycode)
+{
+    if (wxGetKeyState(WXK_SHIFT))
+    {
+        switch (keycode)
+        {
+        case '1':
+            return '!';
+        case '2':
+            return '@';
+        case '3':
+            return '#';
+        case '4':
+            return '$';
+        case '5':
+            return '%';
+        case '6':
+            return '^';
+        case '7':
+            return '&';
+        case '8':
+            return '*';
+        case '9':
+            return '(';
+        case '0':
+            return ')';
+        case '-':
+            return '_';
+        case '=':
+            return '+';
+        case '[':
+            return '{';
+        case ']':
+            return '}';
+        case '\\':
+            return '|';
+        case ';':
+            return ':';
+        case '\'':
+            return '"';
+        case ',':
+            return '<';
+        case '.':
+            return '>';
+        case '/':
+            return '?';
+        default:
+            break;
+        }
+        if (wxGetKeyState(WXK_CAPITAL))
+        {
+            return keycode + 32;
+        }
+        else
+        {
+            return keycode;
+        }
+    }
+    else
+    {
+        if (keycode >= 'A' && keycode <= 'Z' && !wxGetKeyState(WXK_CAPITAL))
+        {
+            return keycode + 32;
+        }
+        else
+        {
+            return keycode;
+        }
+    }
 }
 
 void DrawingView::PredefinedRotate(double angle)
