@@ -18,13 +18,13 @@ struct ShapeFactory
         case ShapeType::Circle:
             return Circle{{origin2D.m_x, origin2D.m_y, 0, 0}, settings.outlineColor, settings.fillColor, settings.width};
         case ShapeType::ITriangle:
-            return ITriangle{{origin2D.m_x, origin2D.m_y, 0, 0}, origin2D, origin2D, settings.outlineColor, settings.fillColor, settings.width};
+            return ITriangle{{origin2D.m_x, origin2D.m_y, 0, 0}, settings.outlineColor, settings.fillColor, settings.width};
         case ShapeType::RTriangle:
-            return RTriangle{{origin2D.m_x, origin2D.m_y, 0, 0}, origin2D, origin2D, settings.outlineColor, settings.fillColor, settings.width};
+            return RTriangle{{origin2D.m_x, origin2D.m_y, 0, 0}, settings.outlineColor, settings.fillColor, settings.width};
         case ShapeType::Diamond:
             return Diamond{{origin2D.m_x, origin2D.m_y, 0, 0}, settings.outlineColor, settings.fillColor, settings.width};
         case ShapeType::Text:
-            return Text{{origin2D.m_x, origin2D.m_y, 300, 100}, "Hello", settings.textColor, settings.width};
+            return Text{{origin2D.m_x, origin2D.m_y, 300, 100}, "", settings.textColor, settings.width};
         default:
             throw std::runtime_error("Unknown shape type");
         }

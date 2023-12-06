@@ -230,7 +230,11 @@ struct DrawingVisitor
         if (matrix)
         {
             *widthBox = abs(matrix->TransformDistance(text.rect.GetLeftTop() - text.rect.GetRightTop()).m_x);
-            *topLeft = matrix->TransformPoint(text.rect.GetLeftTop());
+            wxPoint2DDouble *newTopLeft = new wxPoint2DDouble(matrix->TransformPoint(text.rect.GetLeftTop()));
+            wxPoint2DDouble *newTopRight = new wxPoint2DDouble(matrix->TransformPoint(text.rect.GetRightTop()));
+            *topLeft = {std::min(newTopLeft->m_x, newTopRight->m_x), std::min(newTopLeft->m_y, newTopRight->m_y)};
+            delete newTopLeft;
+            delete newTopRight;
         }
 
         wxArrayString lines;

@@ -47,6 +47,8 @@ Menu/ShapeToolMenu.cpp
 Menu/SelectionToolMenu.cpp
 Menu/TextToolMenu.cpp
 Menu/ZoomToolMenu.cpp
+Menu/ZoomMenu.cpp
+Menu/MoveToolMenu.cpp
 # Command folder
 Command/AddCommand.cpp
 Command/SelectionCommand.cpp

@@ -22,6 +22,7 @@ public:
     bool IsCreating() const;
     void Draw(wxGraphicsContext &gc);
     void SetUpZoomMatrix(double scaleFactor, wxPoint2DDouble center);
+    void UpdateZoomMatrix(wxAffineMatrix2D matrix);
 
 private:
     std::optional<Shape> shape;

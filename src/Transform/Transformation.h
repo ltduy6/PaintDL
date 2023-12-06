@@ -7,5 +7,4 @@ struct Transformation
     double rotationAngle{0.0};
     double scaleX{1.0};
     double scaleY{1.0};
-    wxAffineMatrix2D zoomMatrix;
 };

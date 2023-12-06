@@ -292,6 +292,6 @@ void SelectionBox::RotateUsingHandleMovement(wxPoint2DDouble dragStart, wxPoint2
 void SelectionBox::TranslateUsingHandleMovement(wxPoint2DDouble dragStart, wxPoint2DDouble dragEnd)
 {
     auto dragVector = (dragEnd - dragStart);
-    dragVector = ObjectSpace::ToObjectDistance(m_object.get(), dragVector);
+    dragVector = ObjectSpace::InverseZoomDistance(m_object.get(), dragVector);
     m_object.get().UpdateTranslation(dragVector.m_x, dragVector.m_y);
 }

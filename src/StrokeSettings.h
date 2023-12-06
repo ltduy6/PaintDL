@@ -3,13 +3,14 @@
 
 enum class ToolType
 {
-    Brush = 1,
-    Shape = 2,
-    Transform = 4,
-    Rotate = 8,
-    CustomColor = 16,
-    Text = 32,
-    ZoomIn = 64,
+    Brush,
+    Shape,
+    Transform,
+    Rotate,
+    CustomColor,
+    Text,
+    ZoomIn,
+    Move,
     None
 };
 

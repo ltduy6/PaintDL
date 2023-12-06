@@ -40,6 +40,11 @@ ToolsPane::ToolsPane(wxWindow *parent, wxWindowID id, ToolType type, const wxPoi
         m_bitmap.LoadFile("src/Assets/shapes.png", wxBITMAP_TYPE_PNG);
         break;
     }
+    case ToolType::Move:
+    {
+        m_bitmap.LoadFile("src/Assets/move.png", wxBITMAP_TYPE_PNG);
+        break;
+    }
     default:
         break;
     }

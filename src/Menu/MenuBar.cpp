@@ -24,6 +24,11 @@ void MenuBar::SetUpDrawingCanvas(DrawingCanvas *drawingCanvas)
                                     drawingCanvas->ReFreshCanvas(); });
         if (toolMenu->type == ToolType::Transform)
             dynamic_cast<SelectionToolMenu *>(toolMenu)->CallRotate(drawingCanvas);
+        if (toolMenu->type == ToolType::ZoomIn)
+        {
+            dynamic_cast<ZoomToolMenu *>(toolMenu)->CallZoom(drawingCanvas);
+            drawingCanvas->SetZoomToolMenu(dynamic_cast<ZoomToolMenu *>(toolMenu));
+        }
     }
 }
 
@@ -55,6 +60,8 @@ ToolMenu *MenuBar::GenToolMenu(ToolType type, wxWindow *parent, wxSizer *sizer, 
         return new TextToolMenu(parent, sizer, toolsParent, toolSizer);
     case ToolType::ZoomIn:
         return new ZoomToolMenu(parent, sizer, toolsParent, toolSizer);
+    case ToolType::Move:
+        return new MoveToolMenu(parent, sizer, toolsParent, toolSizer);
     default:
         return nullptr;
     }

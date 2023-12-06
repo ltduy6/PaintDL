@@ -5,6 +5,7 @@
 #include "SelectionToolMenu.h"
 #include "TextToolMenu.h"
 #include "ZoomToolMenu.h"
+#include "MoveToolMenu.h"
 #include "../Canvas/DrawingCanvas.h"
 
 class MenuBar
@@ -22,5 +23,5 @@ private:
 private:
     std::vector<ToolMenu *> toolMenus;
     wxWindow *parent;
-    const std::vector<ToolType> toolTypes = {ToolType::Brush, ToolType::Shape, ToolType::Transform, ToolType::Text, ToolType::ZoomIn};
+    const std::vector<ToolType> toolTypes = {ToolType::Brush, ToolType::Shape, ToolType::Transform, ToolType::Text, ToolType::ZoomIn, ToolType::Move};
 };

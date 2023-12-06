@@ -31,6 +31,7 @@ public:
     void SetVirtualSize(wxSize size);
     void SetCanvasBound(wxRect bound);
     void SetZoomFactor(double zoomFactor, wxPoint2DDouble center);
+    void SetTransLateFactor(double translateX, double translateY);
 
     bool GetIsModified() const;
     bool GetIsSelected() const;
@@ -47,6 +48,7 @@ public:
 
 private:
     void AddPointToCurrentLine(wxPoint);
+    void UpdateZoomMatrix();
     wxChar GetCharFromKeycode(int keycode);
 
 private:
@@ -54,9 +56,12 @@ private:
     wxPoint screenCenter{};
     wxSize m_virtualSize{};
     wxRect m_canvasBound{};
-    double m_zoomFactor{1};
+    wxAffineMatrix2D m_zoomMatrix{};
+    Transformation m_transformation{};
     ShapeCreator shapeCreator{};
     std::optional<SelectionBox> selectionBox{};
+    double m_currentFactor{1};
     bool isModified{false};
     bool isExporting{false};
+    bool isMoving{false};
 };

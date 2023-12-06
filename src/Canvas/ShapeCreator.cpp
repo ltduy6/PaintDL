@@ -175,3 +175,8 @@ void ShapeCreator::SetUpZoomMatrix(double scaleFactor, wxPoint2DDouble center)
     m_zoomMatrix = *newMatrix;
     delete newMatrix;
 }
+
+void ShapeCreator::UpdateZoomMatrix(wxAffineMatrix2D matrix)
+{
+    m_zoomMatrix = matrix;
+}

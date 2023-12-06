@@ -61,10 +61,10 @@ private:
 
 private:
     std::optional<DraggableElement> m_draggableElement{};
+    std::reference_wrapper<CanvasObject> m_object;
     wxPoint2DDouble m_lastDragPoint{};
     double m_handleWidth;
     double m_currentRotateAngle{0.0};
-    std::reference_wrapper<CanvasObject> m_object;
     Transformation m_oldTransformation;
     wxAffineMatrix2D m_oldMatrix;
 };

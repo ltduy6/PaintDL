@@ -4,6 +4,7 @@
 #include "../Command/AddCommand.h"
 #include "../Command/SelectionCommand.h"
 #include "../Command/ShapeCommand.h"
+#include "../Menu/ZoomToolMenu.h"
 #include "../MyApp.h"
 #include <iostream>
 
@@ -23,17 +24,15 @@ DrawingCanvas::DrawingCanvas(wxWindow *parent, DrawingView *view, HistoryPanel &
 
 void DrawingCanvas::ShowExportDialog()
 {
-    std::cout << "ViewSHowExportDialog\n";
     if (view)
     {
-        std::cout << "ShowExportDialog\n";
         wxFileDialog exportFileDialog(this, _("Export drawing"), "", "",
                                       "Bitmap Files (*.bmp)|*.bmp|PNG Files (*.png)|*.png|JPEG Files (*.jpg)|*.jpg|All Files (*.*)|*.*", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
         if (exportFileDialog.ShowModal() == wxID_CANCEL)
             return;
 
-        wxBitmap bitmap(this->GetSize() * this->GetContentScaleFactor());
+        wxBitmap bitmap(wxSize(2580, 1716));
 
         wxMemoryDC memDC;
 
@@ -69,10 +68,15 @@ void DrawingCanvas::RotateCommand()
     }
 }
 
+void DrawingCanvas::SetZoomToolMenu(ZoomToolMenu *zoomToolMenu)
+{
+    m_zoomToolMenu = zoomToolMenu;
+}
+
 void DrawingCanvas::Zoom(double zoomFactor)
 {
     view->SetZoomFactor(zoomFactor, wxPoint2DDouble(this->GetParent()->GetClientSize().x / 2, this->GetParent()->GetClientSize().y / 2));
-
+    m_zoomFactor = zoomFactor;
     Refresh();
 }
 
@@ -87,8 +91,8 @@ void DrawingCanvas::OnMouseDown(wxMouseEvent &event)
     {
         view->OnMouseDown(event.GetPosition());
         isDragging = true;
-        Refresh();
     }
+    Refresh();
 }
 
 void DrawingCanvas::OnMouseMove(wxMouseEvent &event)
@@ -102,27 +106,7 @@ void DrawingCanvas::OnMouseMove(wxMouseEvent &event)
 
 void DrawingCanvas::OnMouseUp(wxMouseEvent &event)
 {
-    if (isDragging && MyApp::GetStrokeSettings().currentTool != ToolType::Text && MyApp::GetStrokeSettings().currentTool != ToolType::ZoomIn)
-    {
-        view->OnMouseDragEnd();
-        isDragging = false;
-        if (MyApp::GetStrokeSettings().currentTool != ToolType::Transform)
-        {
-            HistoryPane *historyPane = m_historyPanel.get().createHistoryPane(getShapeCommandName());
-            auto command = new AddCommand(this, getShapeCommandName(), historyPane);
-            view->GetDocument()->GetCommandProcessor()->Submit(command);
-            m_historyPanel.get().AddHistoryItem(view->GetDocument()->GetCommandProcessor(), historyPane);
-        }
-        else if (view->GetIsModified())
-        {
-            HistoryPane *historyPane = m_historyPanel.get().createHistoryPane("Transform");
-            auto command = new SelectionCommand(this, historyPane);
-            view->GetDocument()->GetCommandProcessor()->Submit(command);
-            m_historyPanel.get().AddHistoryItem(view->GetDocument()->GetCommandProcessor(), historyPane);
-            view->ResetModified();
-        }
-    }
-    else if (MyApp::GetStrokeSettings().currentTool == ToolType::Text)
+    if (MyApp::GetStrokeSettings().currentTool == ToolType::Text)
     {
         isDragging = false;
         if (!view->GetIsModified())
@@ -134,6 +118,31 @@ void DrawingCanvas::OnMouseUp(wxMouseEvent &event)
         }
         std::cout << "Yes" << std::endl;
         view->OnMouseDragEnd();
+        return;
+    }
+    if (isDragging)
+    {
+        view->OnMouseDragEnd();
+        isDragging = false;
+        if (MyApp::GetStrokeSettings().currentTool == ToolType::Move)
+        {
+            return;
+        }
+        if (MyApp::GetStrokeSettings().currentTool == ToolType::Brush || MyApp::GetStrokeSettings().currentTool == ToolType::Shape)
+        {
+            HistoryPane *historyPane = m_historyPanel.get().createHistoryPane(getShapeCommandName());
+            auto command = new AddCommand(this, getShapeCommandName(), historyPane);
+            view->GetDocument()->GetCommandProcessor()->Submit(command);
+            m_historyPanel.get().AddHistoryItem(view->GetDocument()->GetCommandProcessor(), historyPane);
+        }
+        if (MyApp::GetStrokeSettings().currentTool == ToolType::Transform && view->GetIsModified())
+        {
+            HistoryPane *historyPane = m_historyPanel.get().createHistoryPane("Transform");
+            auto command = new SelectionCommand(this, historyPane);
+            view->GetDocument()->GetCommandProcessor()->Submit(command);
+            m_historyPanel.get().AddHistoryItem(view->GetDocument()->GetCommandProcessor(), historyPane);
+            view->ResetModified();
+        }
     }
 }
 
@@ -156,8 +165,14 @@ void DrawingCanvas::OnScroll(wxMouseEvent &event)
 
         m_zoomLevel = event.GetWheelRotation() / event.GetWheelDelta();
 
-        m_zoomFactor = std::pow(1.1, m_zoomLevel);
+        m_zoomFactor *= std::pow(1.1, m_zoomLevel);
 
+        if (m_zoomFactor < 0.5 || m_zoomFactor > 16)
+        {
+            return;
+        }
+
+        m_zoomToolMenu->CallUpdateZoomComboBox(m_zoomFactor);
         view->SetZoomFactor(m_zoomFactor, event.GetPosition());
     }
     Refresh();
@@ -191,21 +206,6 @@ void DrawingCanvas::HandleEvent(wxMouseEvent &event)
         OnMouseLeave(event);
     }
 }
-void DrawingCanvas::UpdateHistoryPanel()
-{
-}
-
-void DrawingCanvas::CenterAfterZoom(wxPoint previousCenter, wxPoint currentCenter)
-{
-}
-
-void DrawingCanvas::SetUpVirtualSize()
-{
-    auto virtualSize = getCanvasBound().GetSize() * m_zoomFactor;
-    virtualSize.IncBy(getCanvasBound().GetPosition() * 2 * m_zoomFactor);
-
-    SetVirtualSize(virtualSize);
-}
 
 wxString DrawingCanvas::getShapeCommandName()
 {
@@ -230,17 +230,14 @@ wxString DrawingCanvas::getShapeCommandName()
     }
 }
 
-wxRect DrawingCanvas::getCanvasBound() const
-{
-    return wxRect(FromDIP(50), FromDIP(50), FromDIP(2000), FromDIP(1000));
-}
-
 void DrawingCanvas::OnPaint(wxPaintEvent &event)
 {
     wxAutoBufferedPaintDC dc(this);
 
     if (view)
     {
+        view->SetVirtualSize(this->GetSize());
+        view->SetCanvasBound(wxRect(0, 0, this->GetSize().x, this->GetSize().y));
         view->OnDraw(&dc);
     }
 }

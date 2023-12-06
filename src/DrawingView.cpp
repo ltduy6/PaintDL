@@ -45,13 +45,21 @@ void DrawingView::OnChangeFilename()
 
 void DrawingView::OnDraw(wxDC *dc)
 {
-    dc->SetBackground(*wxWHITE_BRUSH);
+    dc->SetBackground(*wxTRANSPARENT_BRUSH);
     dc->Clear();
 
     std::unique_ptr<wxGraphicsContext> gc{wxGraphicsContext::CreateFromUnknownDC(*dc)};
 
     if (gc)
     {
+        gc->SetBrush(wxColour(40, 40, 40));
+        gc->DrawRectangle(0, 0, this->m_virtualSize.GetWidth(), this->m_virtualSize.GetHeight());
+        gc->SetBrush(*wxWHITE_BRUSH);
+
+        if (!isExporting)
+            gc->SetTransform(gc->CreateMatrix(m_zoomMatrix));
+
+        gc->DrawRectangle(this->m_canvasBound.GetLeft(), this->m_canvasBound.GetTop(), this->m_canvasBound.GetWidth(), this->m_canvasBound.GetHeight());
 
         for (const auto &obj : GetDocument()->objects)
         {
@@ -127,6 +135,12 @@ void DrawingView::OnMouseDown(wxPoint pt)
         }
         break;
     }
+    case ToolType::Move:
+    {
+        lastDragStart = pt;
+        isMoving = true;
+        break;
+    }
     default:
     {
         break;
@@ -165,6 +179,19 @@ void DrawingView::OnMouseDrag(wxPoint pt)
             isModified = true;
             selectionBox->Drag(pt);
             GetDocument()->Modify(true);
+        }
+        break;
+    }
+    case ToolType::Move:
+    {
+        if (isMoving)
+        {
+            auto translateX = pt.x - lastDragStart.x;
+            auto translateY = pt.y - lastDragStart.y;
+
+            SetTransLateFactor(translateX, translateY);
+
+            lastDragStart = pt;
         }
         break;
     }
@@ -215,6 +242,12 @@ void DrawingView::OnMouseDragEnd()
         }
         break;
     }
+    case ToolType::Move:
+    {
+        std::cout << "Yes" << std::endl;
+        isMoving = false;
+        break;
+    }
     default:
     {
         break;
@@ -263,6 +296,15 @@ void DrawingView::AddPointToCurrentLine(wxPoint pt)
 
     currentSquiggle.points.push_back(pt);
     GetDocument()->Modify(true);
+}
+
+void DrawingView::UpdateZoomMatrix()
+{
+    for (auto &obj : GetDocument()->objects)
+    {
+        obj.get().UpdateZoomMatrix(m_zoomMatrix);
+    }
+    shapeCreator.UpdateZoomMatrix(m_zoomMatrix);
 }
 
 wxChar DrawingView::GetCharFromKeycode(int keycode)
@@ -381,12 +423,32 @@ void DrawingView::SetCanvasBound(wxRect bound)
 
 void DrawingView::SetZoomFactor(double zoomFactor, wxPoint2DDouble center)
 {
-    m_zoomFactor = zoomFactor;
-    for (auto &obj : GetDocument()->objects)
-    {
-        obj.get().SetZoomMatrix(zoomFactor, center);
-    }
-    shapeCreator.SetUpZoomMatrix(zoomFactor, center);
+    wxAffineMatrix2D *newMatrix = new wxAffineMatrix2D();
+    newMatrix->Translate(center.m_x, center.m_y);
+    newMatrix->Scale(zoomFactor / m_currentFactor, zoomFactor / m_currentFactor);
+    newMatrix->Translate(-center.m_x, -center.m_y);
+    newMatrix->Concat(m_zoomMatrix);
+
+    m_zoomMatrix = *newMatrix;
+    m_currentFactor = zoomFactor;
+    delete newMatrix;
+
+    UpdateZoomMatrix();
+}
+
+void DrawingView::SetTransLateFactor(double translateX, double translateY)
+{
+    m_transformation.translationX += translateX;
+    m_transformation.translationY += translateY;
+
+    wxAffineMatrix2D *newMatrix = new wxAffineMatrix2D();
+    newMatrix->Translate(translateX, translateY);
+    newMatrix->Concat(m_zoomMatrix);
+    m_zoomMatrix = *newMatrix;
+
+    delete newMatrix;
+
+    UpdateZoomMatrix();
 }
 
 bool DrawingView::GetIsModified() const

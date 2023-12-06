@@ -25,6 +25,11 @@ wxPoint2DDouble ObjectSpace::ToScreenDistance(const CanvasObject &object, wxPoin
     return GetTransformationMatrix(object).TransformDistance(point);
 }
 
+wxPoint2DDouble ObjectSpace::InverseZoomDistance(const CanvasObject &object, wxPoint2DDouble point)
+{
+    return object.GetInverseZoomMatrix().TransformDistance(point);
+}
+
 wxAffineMatrix2D ObjectSpace::GetTransformationMatrix(const CanvasObject &object)
 {
     return object.GetTransformationMatrix();

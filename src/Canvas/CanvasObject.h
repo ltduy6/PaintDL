@@ -18,6 +18,7 @@ public:
     Shape &GetShape();
     wxAffineMatrix2D GetTransformationMatrix() const;
     wxAffineMatrix2D GetInverseTransformationMatrix() const;
+    wxAffineMatrix2D GetInverseZoomMatrix() const;
 
     bool operator==(const CanvasObject &other) const;
     bool GetCanRotate() const;
@@ -25,7 +26,7 @@ public:
     void UpdateScaleFactor(double scaleX, double scaleY);
     void UpdateRotationAngle(double angle);
     void UpdateTranslation(double translationX, double translationY);
-    void UpdateMatrix(wxAffineMatrix2D matrix);
+    void UpdateZoomMatrix(wxAffineMatrix2D matrix);
 
     void SetScaleFactor(double scaleX, double scaleY);
     void SetRotationAngle(double angle);

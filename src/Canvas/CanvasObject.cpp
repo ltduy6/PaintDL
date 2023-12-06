@@ -63,6 +63,13 @@ wxAffineMatrix2D CanvasObject::GetInverseTransformationMatrix() const
     return matrix;
 }
 
+wxAffineMatrix2D CanvasObject::GetInverseZoomMatrix() const
+{
+    wxAffineMatrix2D matrix = m_zoomMatrix;
+    matrix.Invert();
+    return matrix;
+}
+
 bool CanvasObject::operator==(const CanvasObject &other) const
 {
     // return m_shape == other.m_shape && m_transformation == other.m_transformation && m_boundingBox == other.m_boundingBox;
@@ -95,9 +102,9 @@ void CanvasObject::UpdateTranslation(double translationX, double translationY)
     m_transformationMatrix = ObjectSpace::GetTempTransformationMatrix(*this);
 }
 
-void CanvasObject::UpdateMatrix(wxAffineMatrix2D matrix)
+void CanvasObject::UpdateZoomMatrix(wxAffineMatrix2D matrix)
 {
-    m_transformationMatrix = matrix;
+    m_zoomMatrix = matrix;
 }
 
 void CanvasObject::SetScaleFactor(double scaleX, double scaleY)
