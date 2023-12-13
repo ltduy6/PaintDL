@@ -2,6 +2,8 @@
 
 #include "ToolMenu.h"
 #include "ColorMenu.h"
+#include "SizeMenu.h"
+#include "FontMenu.h"
 
 class TextToolMenu : public ToolMenu
 {
@@ -11,5 +13,5 @@ public:
     ~TextToolMenu() = default;
 
 private:
-    ColorMenu colorMenu;
+    FontMenu fontMenu;
 };

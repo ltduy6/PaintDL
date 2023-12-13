@@ -8,4 +8,5 @@ struct Text
     wxString text;
     wxColour color;
     int width;
+    wxFont font;
 };

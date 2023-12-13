@@ -2,10 +2,10 @@
 
 TextToolMenu::TextToolMenu(wxWindow *parent, wxSizer *sizer, wxWindow *toolParent, wxSizer *toolSizer) : ToolMenu(toolParent, toolSizer, ToolType::Text)
 {
-    colorMenu.SetUpColorMenu(parent, sizer, 1, "Text color");
+    fontMenu.SetUpFontMenu(parent, sizer);
 }
 
 void TextToolMenu::ShowMenu(bool show)
 {
-    colorMenu.Show(show);
+    fontMenu.Show(show);
 }
