@@ -1,5 +1,4 @@
 #pragma once
-
 #include <wx/wx.h>
 #include <wx/graphics.h>
 
@@ -9,4 +8,6 @@ struct Circle
     wxColour outlineColor;
     wxColour fillColor;
     int width;
+    wxGraphicsGradientStops gradientStops;
+    bool isGradient;
 };

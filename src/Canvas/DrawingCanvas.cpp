@@ -20,6 +20,8 @@ DrawingCanvas::DrawingCanvas(wxWindow *parent, DrawingView *view, HistoryPanel &
     this->Bind(wxEVT_LEAVE_WINDOW, &DrawingCanvas::OnMouseLeave, this);
     view->Bind(wxEVT_CHAR_HOOK, &DrawingCanvas::OnKeyDown, this);
     this->Bind(wxEVT_MOUSEWHEEL, &DrawingCanvas::OnScroll, this);
+
+    m_initialSize = parent->GetSize();
 }
 
 void DrawingCanvas::ShowExportDialog()
@@ -32,7 +34,7 @@ void DrawingCanvas::ShowExportDialog()
         if (exportFileDialog.ShowModal() == wxID_CANCEL)
             return;
 
-        wxBitmap bitmap(wxSize(2580, 1716));
+        wxBitmap bitmap(m_initialSize);
 
         wxMemoryDC memDC;
 
@@ -116,7 +118,6 @@ void DrawingCanvas::OnMouseUp(wxMouseEvent &event)
             view->GetDocument()->GetCommandProcessor()->Submit(command);
             m_historyPanel.get().AddHistoryItem(view->GetDocument()->GetCommandProcessor(), historyPane);
         }
-        std::cout << "Yes" << std::endl;
         view->OnMouseDragEnd();
         return;
     }
@@ -180,17 +181,18 @@ void DrawingCanvas::OnScroll(wxMouseEvent &event)
 
 void DrawingCanvas::OnKeyDown(wxKeyEvent &event)
 {
-    view->OnKeyDown(event);
-    Refresh();
+    if (MyApp::GetStrokeSettings().currentTool == ToolType::Text || MyApp::GetStrokeSettings().currentTool == ToolType::Transform)
+    {
+        view->OnKeyDown(event);
+        Refresh();
+    }
     event.Skip();
 }
 
 void DrawingCanvas::HandleEvent(wxMouseEvent &event)
 {
-    std::cout << "Yes\n";
     if (event.GetEventType() == wxEVT_LEFT_DOWN)
     {
-        std::cout << "Mouse Down\n";
         OnMouseDown(event);
     }
     else if (event.GetEventType() == wxEVT_MOTION)
@@ -237,7 +239,7 @@ void DrawingCanvas::OnPaint(wxPaintEvent &event)
     if (view)
     {
         view->SetVirtualSize(this->GetSize());
-        view->SetCanvasBound(wxRect(0, 0, this->GetSize().x, this->GetSize().y));
+        view->SetCanvasBound(wxRect(0, 0, m_initialSize.x, m_initialSize.y));
         view->OnDraw(&dc);
     }
 }

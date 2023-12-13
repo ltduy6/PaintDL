@@ -11,6 +11,9 @@ enum class ToolType
     Text,
     ZoomIn,
     Move,
+    Font,
+    Gradient,
+    NoFill,
     None
 };
 
@@ -32,8 +35,13 @@ struct StrokeSettings
     wxColour outlineColor{*wxBLACK};
     wxColour fillColor{*wxBLACK};
     wxColour textColor{*wxBLACK};
+    wxFont font{10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL};
+    wxGraphicsGradientStops gradientStops;
 
+    bool isGradient{false};
     int width{3};
+    int outlineWidth{3};
+    int fontSize{10};
     double selectionHandleWidth;
 
     ShapeType currentShape{ShapeType::Path};

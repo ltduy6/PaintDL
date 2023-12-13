@@ -42,6 +42,7 @@ private:
     DrawingView *view;
     std::reference_wrapper<HistoryPanel> m_historyPanel;
     wxPoint2DDouble m_lastZoomCenter{};
+    wxSize m_initialSize{};
     ZoomToolMenu *m_zoomToolMenu{nullptr};
     double m_zoomFactor{1};
     int m_zoomLevel{0};

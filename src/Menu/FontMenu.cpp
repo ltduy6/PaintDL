@@ -30,5 +30,6 @@ void FontMenu::SelectFont(wxWindow *parent)
         wxFontData retData = dialog.GetFontData();
         wxFont font = retData.GetChosenFont();
         MyApp::GetStrokeSettings().font = font;
+        MyApp::GetStrokeSettings().textColor = retData.GetColour();
     }
 }

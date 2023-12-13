@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.6 FATAL_ERROR)
 
-project(wx_cmake_template_core LANGUAGES CXX)
+project(PaintApp_core LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -12,25 +12,27 @@ endif()
 
 set(wxWidgets_USE_STATIC 1)
 
-find_package(wxWidgets REQUIRED)
+find_package(wxWidgets REQUIRED xml core base)
 
 set(SRCS 
 # Main folder
 main.cpp 
 DrawingView.cpp 
 DrawingDocument.cpp
-CanvasInfoPanel.cpp
 # Canvas folder
 Canvas/DrawingCanvas.cpp 
 Canvas/CanvasObject.cpp
 Canvas/ObjectSpace.cpp
 Canvas/SelectionBox.cpp
 Canvas/ShapeCreator.cpp
+# Gradient
+Gradient/gradient.cpp
+Gradient/gradientdlg.cpp
+Gradient/GradientBrush.cpp
 # Menu folder
 Menu/SelectablePane.cpp 
 Menu/ColorPane.cpp 
 Menu/SizePane.cpp 
-Menu/RoundedButton.cpp 
 Menu/ShapePane.cpp
 Menu/ToolsPane.cpp
 Menu/ColorMenu.cpp
@@ -49,6 +51,7 @@ Menu/TextToolMenu.cpp
 Menu/ZoomToolMenu.cpp
 Menu/ZoomMenu.cpp
 Menu/MoveToolMenu.cpp
+Menu/FontMenu.cpp
 # Command folder
 Command/AddCommand.cpp
 Command/SelectionCommand.cpp
@@ -67,6 +70,7 @@ else()
     # instead of the main function. This is ignored on other systems,
     # so it works on all platforms
     add_executable(main WIN32 ${SRCS} main.exe.manifest)
+
 endif()
 
 target_link_libraries(main PRIVATE ${wxWidgets_LIBRARIES})

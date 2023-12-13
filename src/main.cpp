@@ -2,6 +2,7 @@
 #include <wx/wrapsizer.h>
 #include <wx/splitter.h>
 #include <wx/colordlg.h>
+#include <wx/taskbar.h>
 #include <functional>
 
 #include <string>
@@ -16,7 +17,6 @@
 #include "Canvas/DrawingCanvas.h"
 #include "DrawingDocument.h"
 #include "DrawingView.h"
-#include "CanvasInfoPanel.h"
 
 wxIMPLEMENT_APP(MyApp);
 
@@ -68,6 +68,12 @@ bool MyApp::OnInit()
                       CLASSINFO(DrawingView));
 
     m_frame = new MyFrame(m_docManager.get(), nullptr, wxID_ANY, wxGetApp().GetAppDisplayName());
+
+    // set icon for the app including the taskbar icon
+    wxIcon icon;
+    icon.CopyFromBitmap(wxBitmap("src/Assets/brush.png", wxBITMAP_TYPE_PNG));
+    m_frame->SetIcon(icon);
+
     m_frame->Show(true);
 
     m_strokeSettings.selectionHandleWidth = m_frame->FromDIP(10);
@@ -177,7 +183,7 @@ MyFrame::MyFrame(wxDocManager *manager, wxFrame *frame, wxWindowID id, const wxS
     docPanel->SetBackgroundColour(wxColour(40, 40, 40));
 
     splitter->SplitVertically(splitterControl, docPanel);
-    splitter->SetSashPosition(FromDIP(100));
+    splitter->SetSashPosition(FromDIP(200));
 
     this->SetSize(FromDIP(800), FromDIP(500));
     this->SetMinSize({FromDIP(400), FromDIP(200)});
@@ -195,8 +201,6 @@ void MyFrame::BuildMenuBar()
     auto fileMenu = new wxMenu;
     fileMenu->Append(wxID_NEW);
     fileMenu->Append(wxID_OPEN);
-    fileMenu->Append(wxID_SAVE);
-    fileMenu->Append(wxID_SAVEAS);
     fileMenu->Append(wxID_EXIT);
     fileMenu->Append(ExportId, "&Export...");
     fileMenu->Bind(

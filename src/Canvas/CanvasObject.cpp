@@ -111,17 +111,23 @@ void CanvasObject::SetScaleFactor(double scaleX, double scaleY)
 {
     m_transformation.scaleX = scaleX;
     m_transformation.scaleY = scaleY;
+
+    m_transformationMatrix = ObjectSpace::GetTempTransformationMatrix(*this);
 }
 
 void CanvasObject::SetRotationAngle(double angle)
 {
     m_transformation.rotationAngle = angle;
+
+    m_transformationMatrix = ObjectSpace::GetTempTransformationMatrix(*this);
 }
 
 void CanvasObject::SetTranslation(double translationX, double translationY)
 {
     m_transformation.translationX = translationX;
     m_transformation.translationY = translationY;
+
+    m_transformationMatrix = ObjectSpace::GetTempTransformationMatrix(*this);
 }
 void CanvasObject::SetCanRotate(bool canRotate)
 {

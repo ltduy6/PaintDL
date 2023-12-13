@@ -8,12 +8,14 @@
 class SizeMenu : public MenuTemplate
 {
 public:
-    void SetUpSizeMenu(wxWindow *parent, wxSizer *sizer);
+    void SetUpSizeMenu(wxWindow *parent, wxSizer *sizer, std::string labelText);
 
 private:
-    void SelectSizePane(SizePane *pane);
+    void UpdateWidth(const int &width, const std::string &label);
+    void SetUpFontSizeMenu(wxWindow *parent, wxSizer *sizer);
+    void SetUpShapeMenu(wxWindow *parent, wxSizer *sizer, const std::string &labelText);
 
 private:
-    std::vector<SizePane *> sizePanes;
-    const std::vector<int> penWidths = {1, 3, 5, 8};
+    wxSlider *slider;
+    wxComboBox *comboBox;
 };

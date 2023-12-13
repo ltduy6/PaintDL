@@ -4,7 +4,6 @@
 #include <wx/wrapsizer.h>
 
 #include "HistoryPane.h"
-#include "RoundedButton.h"
 
 class HistoryPanel
 {

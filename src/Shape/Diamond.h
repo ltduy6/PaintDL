@@ -7,5 +7,7 @@ struct Diamond
     wxRect2DDouble rect;
     wxColour outlineColor;
     wxColour fillColor;
-    int width; 
+    int width;
+    wxGraphicsGradientStops gradientStops;
+    bool isGradient;
 };

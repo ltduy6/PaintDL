@@ -3,6 +3,7 @@
 #include "ToolMenu.h"
 #include "ShapeMenu.h"
 #include "ColorMenu.h"
+#include "SizeMenu.h"
 
 class ShapeToolMenu : public ToolMenu
 {
@@ -12,11 +13,9 @@ public:
     ~ShapeToolMenu() = default;
 
 private:
-    void SetUpColor(wxWindow *parent, wxSizer *sizer);
-
-private:
     ShapeMenu shapeMenu;
     ColorMenu colorOutline;
     ColorMenu colorFill;
+    SizeMenu sizeMenu;
     wxWindow *parent;
 };

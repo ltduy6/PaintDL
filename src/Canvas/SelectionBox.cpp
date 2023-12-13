@@ -18,7 +18,7 @@ CanvasObject &SelectionBox::GetObject()
     return m_object;
 }
 
-void SelectionBox::UpdateKey(wxChar key, bool isDelete)
+void SelectionBox::UpdateKey(wxUniChar key, bool isDelete)
 {
     wxDouble newHeight = 0;
     wxDouble newWidth = 0;

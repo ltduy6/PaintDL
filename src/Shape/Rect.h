@@ -8,4 +8,6 @@ struct Rect
     wxColour outlineColor;
     wxColour fillColor;
     int width;
+    wxGraphicsGradientStops gradientStops;
+    bool isGradient;
 };

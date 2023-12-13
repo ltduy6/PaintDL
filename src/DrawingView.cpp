@@ -114,7 +114,6 @@ void DrawingView::OnMouseDown(wxPoint pt)
 
             if (selectionBox.has_value())
             {
-                std::cout << "Yes" << std::endl;
                 selectionBox->StartDragging(pt);
             }
         }
@@ -244,7 +243,6 @@ void DrawingView::OnMouseDragEnd()
     }
     case ToolType::Move:
     {
-        std::cout << "Yes" << std::endl;
         isMoving = false;
         break;
     }
@@ -261,7 +259,6 @@ void DrawingView::OnKeyDown(wxKeyEvent &event)
     {
         if (event.GetUnicodeKey() == WXK_NONE)
         {
-            std::cout << "None" << std::endl;
             return;
         }
         switch (event.GetKeyCode())
@@ -274,7 +271,6 @@ void DrawingView::OnKeyDown(wxKeyEvent &event)
         case WXK_TAB:
             break;
         case WXK_RETURN:
-            std::cout << "Enter" << std::endl;
             selectionBox->UpdateKey('\n');
             break;
         default:
@@ -286,15 +282,7 @@ void DrawingView::OnKeyDown(wxKeyEvent &event)
 
 void DrawingView::OnClear()
 {
-    GetDocument()->shapes.clear();
-    GetDocument()->Modify(true);
-}
-
-void DrawingView::AddPointToCurrentLine(wxPoint pt)
-{
-    auto &currentSquiggle = GetDocument()->lines.back();
-
-    currentSquiggle.points.push_back(pt);
+    GetDocument()->objects.clear();
     GetDocument()->Modify(true);
 }
 

@@ -27,7 +27,7 @@ ToolsPane::ToolsPane(wxWindow *parent, wxWindowID id, ToolType type, const wxPoi
     }
     case ToolType::Text:
     {
-        m_bitmap.LoadFile("src/Assets/letter.png", wxBITMAP_TYPE_PNG);
+        m_bitmap.LoadFile("src/Assets/text.png", wxBITMAP_TYPE_PNG);
         break;
     }
     case ToolType::ZoomIn:
@@ -43,6 +43,21 @@ ToolsPane::ToolsPane(wxWindow *parent, wxWindowID id, ToolType type, const wxPoi
     case ToolType::Move:
     {
         m_bitmap.LoadFile("src/Assets/move.png", wxBITMAP_TYPE_PNG);
+        break;
+    }
+    case ToolType::Font:
+    {
+        m_bitmap.LoadFile("src/Assets/font.png", wxBITMAP_TYPE_PNG);
+        break;
+    }
+    case ToolType::Gradient:
+    {
+        m_bitmap.LoadFile("src/Assets/gradient.png", wxBITMAP_TYPE_PNG);
+        break;
+    }
+    case ToolType::NoFill:
+    {
+        m_bitmap.LoadFile("src/Assets/no-fill.png", wxBITMAP_TYPE_PNG);
         break;
     }
     default:

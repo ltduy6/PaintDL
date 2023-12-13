@@ -9,6 +9,7 @@
 #include "../Shape/Path.h"
 #include "../Shape/Rect.h"
 #include "../Shape/RTriangle.h"
+#include "../Gradient/GradientBrush.h"
 #include "CanvasObject.h"
 
 struct DrawingVisitor
@@ -20,7 +21,6 @@ struct DrawingVisitor
     void operator()(const Rect &rect)
     {
         gc.SetPen(wxPen(rect.outlineColor, rect.width));
-        gc.SetBrush(wxColour(rect.fillColor));
 
         wxPoint2DDouble *points = new wxPoint2DDouble[5];
         points[0] = rect.rect.GetLeftTop();
@@ -44,6 +44,11 @@ struct DrawingVisitor
                 path->AddLineToPoint(points[i]);
         }
         path->CloseSubpath();
+
+        if (rect.isGradient)
+            gc.SetBrush(Gradient::CreateBrush(&gc, matrix, rect.rect, rect.gradientStops));
+        else
+            gc.SetBrush(wxBrush(rect.fillColor));
 
         gc.FillPath(*path);
         gc.StrokePath(*path);
@@ -72,7 +77,6 @@ struct DrawingVisitor
     {
         // get 500 points in an ellipse
         gc.SetPen(wxPen(circle.outlineColor, circle.width));
-        gc.SetBrush(wxColour(circle.fillColor));
 
         wxPoint2DDouble *points = new wxPoint2DDouble[501];
         for (int i = 0; i < 500; i++)
@@ -100,6 +104,11 @@ struct DrawingVisitor
         }
         path->CloseSubpath();
 
+        if (circle.isGradient)
+            gc.SetBrush(Gradient::CreateBrush(&gc, matrix, circle.rect, circle.gradientStops));
+        else
+            gc.SetBrush(wxBrush(circle.fillColor));
+
         gc.FillPath(*path);
         gc.StrokePath(*path);
 
@@ -110,7 +119,6 @@ struct DrawingVisitor
     void operator()(const ITriangle &triangle)
     {
         gc.SetPen(wxPen(triangle.outlineColor, triangle.width));
-        gc.SetBrush(wxColour(triangle.fillColor));
 
         wxPoint2DDouble *points = new wxPoint2DDouble[4];
         points[0] = {triangle.rect.GetCentre().m_x, triangle.rect.GetTop()};
@@ -136,6 +144,11 @@ struct DrawingVisitor
         }
         path->CloseSubpath();
 
+        if (triangle.isGradient)
+            gc.SetBrush(Gradient::CreateBrush(&gc, matrix, triangle.rect, triangle.gradientStops));
+        else
+            gc.SetBrush(wxBrush(triangle.fillColor));
+
         gc.FillPath(*path);
         gc.StrokePath(*path);
 
@@ -146,7 +159,6 @@ struct DrawingVisitor
     void operator()(const RTriangle &triangle)
     {
         gc.SetPen(wxPen(triangle.outlineColor, triangle.width));
-        gc.SetBrush(wxColour(triangle.fillColor));
 
         wxPoint2DDouble *points = new wxPoint2DDouble[4];
         points[0] = triangle.rect.GetLeftTop();
@@ -172,6 +184,11 @@ struct DrawingVisitor
         }
         path->CloseSubpath();
 
+        if (triangle.isGradient)
+            gc.SetBrush(Gradient::CreateBrush(&gc, matrix, triangle.rect, triangle.gradientStops));
+        else
+            gc.SetBrush(wxBrush(triangle.fillColor));
+
         gc.FillPath(*path);
         gc.StrokePath(*path);
 
@@ -182,7 +199,6 @@ struct DrawingVisitor
     void operator()(const Diamond &diamond)
     {
         gc.SetPen(wxPen(diamond.outlineColor, diamond.width));
-        gc.SetBrush(wxColour(diamond.fillColor));
 
         wxPoint2DDouble *points = new wxPoint2DDouble[5];
         points[0] = {diamond.rect.m_x + diamond.rect.m_width / 2, diamond.rect.m_y};
@@ -209,6 +225,11 @@ struct DrawingVisitor
         }
         path->CloseSubpath();
 
+        if (diamond.isGradient)
+            gc.SetBrush(Gradient::CreateBrush(&gc, matrix, diamond.rect, diamond.gradientStops));
+        else
+            gc.SetBrush(wxBrush(diamond.fillColor));
+
         gc.FillPath(*path);
         gc.StrokePath(*path);
 
@@ -218,13 +239,15 @@ struct DrawingVisitor
 
     void operator()(const Text &text)
     {
-        wxFont font(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_LIGHT);
-        wxDouble width, height;
+        wxDouble *width = new wxDouble(0);
+        wxDouble *height = new wxDouble(0);
         wxDouble *widthBox = new wxDouble(text.rect.m_width);
         wxPoint2DDouble *topLeft = new wxPoint2DDouble(text.rect.m_x, text.rect.m_y);
 
-        gc.SetFont(font, text.color);
-        gc.GetTextExtent(text.text, &width, &height);
+        std::cout << text.text << std::endl;
+
+        gc.SetFont(text.font, text.color);
+        gc.GetTextExtent(text.text, width, height);
         gc.PushState();
 
         if (matrix)
@@ -239,6 +262,7 @@ struct DrawingVisitor
 
         wxArrayString lines;
         wxString line = "";
+
         for (const auto &c : text.text)
         {
             if (c == '\n')
@@ -248,8 +272,8 @@ struct DrawingVisitor
             }
             else
             {
-                gc.GetTextExtent(line + c, &width, &height);
-                if (width < *widthBox)
+                gc.GetTextExtent(line + c + ' ', width, height);
+                if (*width < *widthBox)
                 {
                     line += c;
                 }
@@ -264,8 +288,8 @@ struct DrawingVisitor
         wxDouble *newHeight = new wxDouble(0);
         for (int i = 0; i < lines.size(); i++)
         {
-            gc.DrawText(_(lines[i]), topLeft->m_x, topLeft->m_y + i * (height));
-            *newHeight += height;
+            gc.DrawText(_(lines[i]), topLeft->m_x + 5, topLeft->m_y + i * (*height));
+            *newHeight += *height;
         }
         if (m_object && matrix->TransformDistance({0, text.rect.m_height}).m_y < *newHeight)
         {
@@ -274,9 +298,11 @@ struct DrawingVisitor
             matrix->Invert();
             m_object->IncreaseHeight(*newHeight);
         }
-        delete newHeight;
         gc.PopState();
+        delete newHeight;
         delete widthBox;
         delete topLeft;
+        delete width;
+        delete height;
     }
 };

@@ -2,7 +2,6 @@
 
 #include "../MyApp.h"
 #include "ToolsPane.h"
-#include "RoundedButton.h"
 #include "../Canvas/DrawingCanvas.h"
 #include "MenuTemplate.h"
 
