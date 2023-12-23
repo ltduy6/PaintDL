@@ -35,6 +35,7 @@ public:
 
     bool GetIsModified() const;
     bool GetIsSelected() const;
+    bool GetIsCanRotate() const;
 
     // Setting the Frame title
     void OnChangeFilename() override;
@@ -47,7 +48,6 @@ public:
     wxDECLARE_DYNAMIC_CLASS(DrawingView);
 
 private:
-    void AddPointToCurrentLine(wxPoint);
     void UpdateZoomMatrix();
     wxChar GetCharFromKeycode(int keycode);
 

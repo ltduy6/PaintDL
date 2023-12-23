@@ -19,7 +19,6 @@ void SelectablePane::AddCallback(std::function<void()> callback)
 void SelectablePane::PopCallback()
 {
     callbacks.pop_back();
-    std::cout << callbacks.size() << std::endl;
 }
 
 void SelectablePane::OnPaint(wxPaintEvent &event)

@@ -44,6 +44,7 @@ private:
     wxPoint2DDouble m_lastZoomCenter{};
     wxSize m_initialSize{};
     ZoomToolMenu *m_zoomToolMenu{nullptr};
+
     double m_zoomFactor{1};
     int m_zoomLevel{0};
     bool isDragging{false};

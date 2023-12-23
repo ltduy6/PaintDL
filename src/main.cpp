@@ -40,7 +40,6 @@ private:
     MenuBar menuBarHolder{};
 
     wxPanel *docPanel;
-    wxPanel *zoomPanel;
     wxScrolled<wxPanel> *m_controlsPanel;
     wxPanel *m_historyPanel;
 
@@ -48,9 +47,6 @@ private:
     DrawingCanvas *m_canvas{nullptr};
 
     int idExport{};
-
-    const std::string lightBackground = "#f4f3f3";
-    const std::string darkBackground = "#2c2828";
 };
 
 bool MyApp::OnInit()
@@ -200,7 +196,6 @@ void MyFrame::BuildMenuBar()
 
     auto fileMenu = new wxMenu;
     fileMenu->Append(wxID_NEW);
-    fileMenu->Append(wxID_OPEN);
     fileMenu->Append(wxID_EXIT);
     fileMenu->Append(ExportId, "&Export...");
     fileMenu->Bind(

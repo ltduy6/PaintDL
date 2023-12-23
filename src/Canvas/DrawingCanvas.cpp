@@ -4,6 +4,7 @@
 #include "../Command/AddCommand.h"
 #include "../Command/SelectionCommand.h"
 #include "../Command/ShapeCommand.h"
+#include "../Command/DeleteCommand.h"
 #include "../Menu/ZoomToolMenu.h"
 #include "../MyApp.h"
 #include <iostream>
@@ -59,7 +60,7 @@ void DrawingCanvas::ReFreshCanvas()
 
 void DrawingCanvas::RotateCommand()
 {
-    if (view->GetIsSelected() && MyApp::GetStrokeSettings().currentTool == ToolType::Transform)
+    if (view->GetIsCanRotate() && MyApp::GetStrokeSettings().currentTool == ToolType::Transform)
     {
         view->PredefinedRotate(M_PI / 2);
         Refresh();
@@ -183,7 +184,18 @@ void DrawingCanvas::OnKeyDown(wxKeyEvent &event)
 {
     if (MyApp::GetStrokeSettings().currentTool == ToolType::Text || MyApp::GetStrokeSettings().currentTool == ToolType::Transform)
     {
-        view->OnKeyDown(event);
+        if (event.GetKeyCode() == WXK_DELETE)
+        {
+            if (view->GetIsSelected())
+            {
+                HistoryPane *historyPane = m_historyPanel.get().createHistoryPane("Delete");
+                auto command = new DeleteCommand(this, historyPane);
+                view->GetDocument()->GetCommandProcessor()->Submit(command);
+                m_historyPanel.get().AddHistoryItem(view->GetDocument()->GetCommandProcessor(), historyPane);
+            }
+        }
+        else
+            view->OnKeyDown(event);
         Refresh();
     }
     event.Skip();
@@ -211,8 +223,6 @@ void DrawingCanvas::HandleEvent(wxMouseEvent &event)
 
 wxString DrawingCanvas::getShapeCommandName()
 {
-    if (MyApp::GetStrokeSettings().currentTool == ToolType::Brush)
-        return "Brush Tool";
     switch (MyApp::GetStrokeSettings().currentShape)
     {
     case ShapeType::Rect:
@@ -227,6 +237,8 @@ wxString DrawingCanvas::getShapeCommandName()
         return "RTriangle";
     case ShapeType::Text:
         return "Text";
+    case ShapeType::Path:
+        return "Path";
     default:
         return "Shape";
     }

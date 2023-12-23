@@ -446,6 +446,11 @@ bool DrawingView::GetIsModified() const
 
 bool DrawingView::GetIsSelected() const
 {
+    return selectionBox.has_value();
+}
+
+bool DrawingView::GetIsCanRotate() const
+{
     return selectionBox.has_value() && selectionBox->isCanRotate();
 }
 

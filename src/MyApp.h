@@ -20,6 +20,5 @@ private:
 
     std::unique_ptr<wxDocManager> m_docManager{};
 
-    std::function<void(double)> m_rotateCallback;
     StrokeSettings m_strokeSettings;
 };

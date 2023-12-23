@@ -5,6 +5,7 @@ CanvasObject::CanvasObject(const Shape &shape, Transformation transformation, wx
     : m_shape(shape), m_transformation(transformation), m_boundingBox{ShapeUltils::CalculateBoundingBox(shape)},
       m_zoomMatrix(matrix)
 {
+    SetName();
 }
 
 void CanvasObject::Draw(wxGraphicsContext &gc, bool isExporting)
@@ -68,6 +69,11 @@ wxAffineMatrix2D CanvasObject::GetInverseZoomMatrix() const
     wxAffineMatrix2D matrix = m_zoomMatrix;
     matrix.Invert();
     return matrix;
+}
+
+wxString CanvasObject::GetName() const
+{
+    return m_name;
 }
 
 bool CanvasObject::operator==(const CanvasObject &other) const
@@ -136,7 +142,6 @@ void CanvasObject::SetCanRotate(bool canRotate)
 
 void CanvasObject::IncreaseHeight(double height)
 {
-    std::cout << height / m_boundingBox.m_height << std::endl;
     wxAffineMatrix2D *newMatrix = new wxAffineMatrix2D();
     wxPoint2DDouble *center = new wxPoint2DDouble((m_boundingBox.GetLeftTop() + m_boundingBox.GetRightTop()) / 2);
     newMatrix->Translate(center->m_x, center->m_y);
@@ -145,4 +150,37 @@ void CanvasObject::IncreaseHeight(double height)
     m_transformationMatrix.Concat(*newMatrix);
     delete newMatrix;
     delete center;
+}
+
+void CanvasObject::SetName()
+{
+    std::visit(Visitor{[&](Path &path)
+                       {
+                           m_name = "Path";
+                       },
+                       [&](Rect &rect)
+                       {
+                           m_name = "Rectangle";
+                       },
+                       [&](Circle &circle)
+                       {
+                           m_name = "Circle";
+                       },
+                       [&](ITriangle &triangle)
+                       {
+                           m_name = "ITriangle";
+                       },
+                       [&](RTriangle &triangle)
+                       {
+                           m_name = "RTriangle";
+                       },
+                       [&](Diamond &diamond)
+                       {
+                           m_name = "Diamond";
+                       },
+                       [&](Text &text)
+                       {
+                           m_name = "Text";
+                       }},
+               m_shape);
 }

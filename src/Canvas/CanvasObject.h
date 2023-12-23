@@ -19,6 +19,7 @@ public:
     wxAffineMatrix2D GetTransformationMatrix() const;
     wxAffineMatrix2D GetInverseTransformationMatrix() const;
     wxAffineMatrix2D GetInverseZoomMatrix() const;
+    wxString GetName() const;
 
     bool operator==(const CanvasObject &other) const;
     bool GetCanRotate() const;
@@ -36,9 +37,13 @@ public:
     void IncreaseHeight(double height);
 
 private:
+    void SetName();
+
+private:
     Shape m_shape;
     wxRect2DDouble m_boundingBox;
     Transformation m_transformation;
+    wxString m_name;
 
     wxAffineMatrix2D m_transformationMatrix;
     wxAffineMatrix2D m_zoomMatrix;

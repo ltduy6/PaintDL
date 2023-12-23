@@ -244,8 +244,6 @@ struct DrawingVisitor
         wxDouble *widthBox = new wxDouble(text.rect.m_width);
         wxPoint2DDouble *topLeft = new wxPoint2DDouble(text.rect.m_x, text.rect.m_y);
 
-        std::cout << text.text << std::endl;
-
         gc.SetFont(text.font, text.color);
         gc.GetTextExtent(text.text, width, height);
         gc.PushState();
