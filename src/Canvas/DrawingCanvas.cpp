@@ -90,17 +90,14 @@ DrawingView *DrawingCanvas::GetView() const
 
 void DrawingCanvas::OnMouseDown(wxMouseEvent &event)
 {
-    if (MyApp::GetStrokeSettings().currentTool != ToolType::ZoomIn)
-    {
-        view->OnMouseDown(event.GetPosition());
-        isDragging = true;
-    }
+    view->OnMouseDown(event.GetPosition());
+    isDragging = true;
     Refresh();
 }
 
 void DrawingCanvas::OnMouseMove(wxMouseEvent &event)
 {
-    if (isDragging && MyApp::GetStrokeSettings().currentTool != ToolType::ZoomIn)
+    if (isDragging)
     {
         view->OnMouseDrag(event.GetPosition());
         Refresh();

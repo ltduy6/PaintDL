@@ -135,6 +135,7 @@ void DrawingView::OnMouseDown(wxPoint pt)
         break;
     }
     case ToolType::Move:
+    case ToolType::ZoomIn:
     {
         lastDragStart = pt;
         isMoving = true;
@@ -182,6 +183,7 @@ void DrawingView::OnMouseDrag(wxPoint pt)
         break;
     }
     case ToolType::Move:
+    case ToolType::ZoomIn:
     {
         if (isMoving)
         {
@@ -242,6 +244,7 @@ void DrawingView::OnMouseDragEnd()
         break;
     }
     case ToolType::Move:
+    case ToolType::ZoomIn:
     {
         isMoving = false;
         break;

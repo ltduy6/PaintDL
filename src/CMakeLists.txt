@@ -55,7 +55,8 @@ Menu/FontMenu.cpp
 # Command folder
 Command/AddCommand.cpp
 Command/SelectionCommand.cpp
-Command/ShapeCommand.cpp)
+Command/ShapeCommand.cpp
+Command/DeleteCommand.cpp)
 
 include(${wxWidgets_USE_FILE})
 
